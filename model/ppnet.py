@@ -36,7 +36,7 @@ class PPNet(nn.Module):
                  prototype_activation_function='log',
                  add_on_layers_type='bottleneck',
                  genetics_mode=False, 
-                 use_cosine=False
+                 use_cosine=False,
          ):
 
         super(PPNet, self).__init__()
@@ -106,19 +106,7 @@ class PPNet(nn.Module):
             self.add_on_layers = nn.Sequential(*add_on_layers)
         else:
             if self.use_cosine:
-                if last_conv_layer_weights:
-                    conv = nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
-
-                    # Set conv weights
-                    conv[0].weight = last_conv_layer_weights
-
-                    self.add_on_layers = nn.Sequential(
-                        conv
-                    )
-                else:
-                    self.add_on_layers = nn.Sequential(
-                        nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
-                    )
+                self.add_on_layers = nn.Sequential()
             else:
                 self.add_on_layers = nn.Sequential(
                     nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),

@@ -27,7 +27,7 @@ def construct_ppnet(base_architecture, pretrained=True, img_size=224,
                  add_on_layers_type=add_on_layers_type)
 
 
-def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_activation_function='log', use_cosine=False):
+def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_activation_function='log', use_cosine=True):
     m = GeneticCNN2D(length, num_classes, include_connected_layer=False, remove_last_layer=use_cosine)
 
     # Remove the fully connected layer
@@ -35,8 +35,6 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
     for k in list(weights.keys()):
         if "conv" not in k:
             del weights[k]
-    
-    last_conv_layer_weights = list(m.children())[-1]
     
     m.load_state_dict(weights)
 
@@ -46,10 +44,10 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                  proto_layer_rf_info=None, 
                  num_classes=num_classes,
                  init_weights=False, 
-                 prototype_activation_function=prototype_activation_function, 
+                 prototype_activation_function="linear", 
                  add_on_layers_type=None, 
                  genetics_mode=True, 
-                 use_cosine=use_cosine,
+                 use_cosine=True,
         )
 
 

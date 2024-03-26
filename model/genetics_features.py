@@ -22,14 +22,14 @@ class GeneticCNN2D(nn.Module):
         self.remove_last_layer = remove_last_layer
 
         if include_connected_layer:
-            self.fc1 = nn.Linear(128 * (length // 8), class_count)
+            self.fc1 = nn.Linear(128 * (length // 8 //3), class_count)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
         if not self.remove_last_layer:
-            x = F.relu(self.conv4(x))
+            x = F.relu(self.pool3(self.conv4(x)))
 
         if hasattr(self, 'fc1'):
             x = torch.flatten(x, 1)
