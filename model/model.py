@@ -50,8 +50,6 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                  use_cosine=True,
         )
 
-
-
 def construct_ppnet(cfg): 
     if cfg.DATASET.NAME == "cub": 
         return construct_ppnet(
