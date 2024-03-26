@@ -5,7 +5,6 @@ from model.ppnet import PPNet, base_architecture_to_features
 from prototype.receptive_field import compute_proto_layer_rf_info_v2
 
 
-
 def construct_ppnet(base_architecture, pretrained=True, img_size=224,
                     prototype_shape=(2000, 512, 1, 1), num_classes=200,
                     prototype_activation_function='log',

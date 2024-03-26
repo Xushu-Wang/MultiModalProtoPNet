@@ -1,7 +1,6 @@
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from model import PPNet
 
 class GeneticCNN2D(nn.Module):
     """Takes a (4, length) tensor and returns a (class_count,) tensor.

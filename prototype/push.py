@@ -6,7 +6,7 @@ import os
 import copy
 import time
 
-from postprocessing.receptive_field import compute_rf_prototype
+from prototype.receptive_field import compute_rf_prototype
 from utils.helpers import makedir, find_high_activation_crop
 
 # push each prototype to the nearest patch in the training set

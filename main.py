@@ -14,8 +14,6 @@ import train.train_and_test as tnt
 import prototype.push as push
 import prototype.prune as prune
 
-
-    
 def main():
     cfg = get_cfg_defaults()
 
@@ -56,7 +54,6 @@ def main():
 
     for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
         log('epoch: \t{0}'.format(epoch))
-
         
         # Warm up and Training Epochs
         if epoch < cfg.OPTIM.NUM_WARM_EPOCHS:
