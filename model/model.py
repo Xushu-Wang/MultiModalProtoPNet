@@ -1,6 +1,6 @@
 import torch
 
-from model.genetics_features import GeneticCNN
+from model.genetics_features import GeneticCNN2D
 from model.ppnet import PPNet, base_architecture_to_features
 from prototype.receptive_field import compute_proto_layer_rf_info_v2
 
@@ -27,17 +27,30 @@ def construct_ppnet(base_architecture, pretrained=True, img_size=224,
                  add_on_layers_type=add_on_layers_type)
 
 
-def construct_genetic_ppnet(length:int=720, num_classes:int=10, prototype_shape:int=(600, 24, 1, 1), model_path:str=None,prototype_activation_function='log', use_cosine:bool=False):
-    m = GeneticCNN(length, num_classes, two_dimensional=True)
+def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_activation_function='log', use_cosine=False):
+    m = GeneticCNN2D(length, num_classes, include_connected_layer=False, remove_last_layer=use_cosine)
 
     # Remove the fully connected layer
     weights = torch.load(model_path)
     for k in list(weights.keys()):
         if "conv" not in k:
             del weights[k]
+    
+    last_conv_layer_weights = list(m.children())[-1]
+    
     m.load_state_dict(weights)
 
-    return PPNet(m, (4, length), prototype_shape, None, num_classes, False, prototype_activation_function, None, True, use_cosine=use_cosine)
+    return PPNet(features=m, 
+                 img_size=(4, 1, length), 
+                 prototype_shape=prototype_shape,
+                 proto_layer_rf_info=None, 
+                 num_classes=num_classes,
+                 init_weights=False, 
+                 prototype_activation_function=prototype_activation_function, 
+                 add_on_layers_type=None, 
+                 genetics_mode=True, 
+                 use_cosine=use_cosine,
+        )
 
 
 

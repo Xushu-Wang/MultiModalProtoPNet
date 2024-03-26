@@ -104,15 +104,28 @@ class PPNet(nn.Module):
                     add_on_layers.append(nn.Sigmoid())
                 current_in_channels = current_in_channels // 2
             self.add_on_layers = nn.Sequential(*add_on_layers)
-        elif add_on_layers_type == None:
-            self.add_on_layers = nn.Sequential()
         else:
-            self.add_on_layers = nn.Sequential(
-                nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
-                nn.ReLU(),
-                nn.Conv2d(in_channels=self.prototype_shape[1], out_channels=self.prototype_shape[1], kernel_size=1),
-                nn.Sigmoid()
-                )
+            if self.use_cosine:
+                if last_conv_layer_weights:
+                    conv = nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
+
+                    # Set conv weights
+                    conv[0].weight = last_conv_layer_weights
+
+                    self.add_on_layers = nn.Sequential(
+                        conv
+                    )
+                else:
+                    self.add_on_layers = nn.Sequential(
+                        nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
+                    )
+            else:
+                self.add_on_layers = nn.Sequential(
+                    nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=self.prototype_shape[1], out_channels=self.prototype_shape[1], kernel_size=1),
+                    nn.Sigmoid()
+                    )
         
         self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
                                               requires_grad=True)
@@ -313,5 +326,3 @@ class PPNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
         self.set_last_layer_incorrect_connection(incorrect_strength=-0.5)
-    
-

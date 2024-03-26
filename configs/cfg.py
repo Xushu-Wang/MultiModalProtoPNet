@@ -132,7 +132,7 @@ def update_cfg(cfg, args):
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
         
     elif args.dataset == "genetics":
-        cfg.MODEL.PROTOTYPE_SHAPE = (40 * 40, 128, 1, 1) 
+        cfg.MODEL.PROTOTYPE_SHAPE = (10 * 40, 128, 1, 1) 
         cfg.MODEL.ADD_ON_LAYERS_TYPE = None 
         
         cfg.DATASET.TRAIN_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M", "small_diptera_family-train.tsv"))

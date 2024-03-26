@@ -197,7 +197,7 @@ class GeneticDataset(Dataset):
         self.level = level
         
         if transform == 'onehot':
-            self.transform = GeneticOneHot()
+            self.transform = GeneticOneHot(length=720, zero_encode_unknown=True, include_height_channel=True)
         elif transform == 'kmer':
             self.transform = GeneticOneHot()
         elif transform == 'cgr':
