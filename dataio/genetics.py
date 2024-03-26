@@ -188,7 +188,7 @@ class GeneticDataset(Dataset):
 
     def __init__(self,
                  source: str,
-                 transform=GeneticOneHot(),
+                 transform='onehot',
                  drop_level: str = None,
                  allowed_classes: list[tuple[str, list[str]]]=None,
                  one_label: str = None,
@@ -196,7 +196,16 @@ class GeneticDataset(Dataset):
         ):
         
         self.data = pd.read_csv(source, sep="\t")
-        self.transform = transform
+        
+        if transform == 'onehot':
+            self.transform = GeneticOneHot()
+        elif transform == 'kmer':
+            self.transform = GeneticOneHot()
+        elif transform == 'cgr':
+            self.transform = GeneticCGR()
+        else:
+            self.transform = None
+            
         self.one_label = one_label
         self.classes = classes
         
