@@ -10,7 +10,30 @@ def get_dataset(cfg):
         pass
     
     elif cfg.DATASET.NAME == 'genetics':
-        return GeneticDataset(cfg.DATASET.DATAPATH, cfg.DATASET.TRANSFORM)
+            
+        train_dataset = GeneticDataset(cfg.DATASET.TRAIN_DIR,
+                              cfg.DATASET.TRANSFORM, 
+                              cfg.DATASET.BIOSCAN.TAXONOMY_NAME)
+        
+        
+        train_loader = DataLoader(
+            train_dataset, batch_size=cfg.DATASET.TRAIN_BATCH_SIZE, shuffle=True,
+            num_workers=4, pin_memory=False)
+        
+        
+        test_dataset = GeneticDataset(cfg.DATASET.TEST_DIR, 
+                              cfg.DATASET.TRANSFORM,
+                              cfg.DATASET.BIOSCAN.TAXONOMY_NAME,
+                              train_dataset.get_classes())
+        
+        
+        test_loader = DataLoader(
+            test_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
+            num_workers=4, pin_memory=False)
+        
+        
+        return train_loader, None, test_loader
+    
     
     elif cfg.DATASET.NAME == "cub":
         

@@ -187,15 +187,13 @@ class GeneticDataset(Dataset):
     
 
     def __init__(self,
-                 source: str,
+                 datapath: str,
                  transform='onehot',
                  drop_level: str = None,
-                 allowed_classes: list[tuple[str, list[str]]]=None,
-                 one_label: str = None,
                  classes: list[str] = None
         ):
         
-        self.data = pd.read_csv(source, sep="\t")
+        self.data = pd.read_csv(datapath, sep="\t")
         
         if transform == 'onehot':
             self.transform = GeneticOneHot()
@@ -206,8 +204,6 @@ class GeneticDataset(Dataset):
         else:
             self.transform = None
             
-        self.one_label = one_label
-        self.classes = classes
         
         self.taxnomy_level = ["phylum", "class", "order", "family", "subfamily", "tribe", "genus", "species", "subspecies"]
 
@@ -217,23 +213,15 @@ class GeneticDataset(Dataset):
                 raise ValueError(f"drop_level must be one of {self.taxnomy_level}")
             self.data = self.data[self.data[drop_level] != "not_classified"]
 
-        if allowed_classes:
-            for allowed_class in allowed_classes:
-                level, classes = allowed_class
-                if not level in self.taxnomy_level:
-                    raise ValueError(f"level must be one of {self.taxnomy_level}")
-                self.data = self.data[self.data[level].isin(classes)]
+        if classes:
+            self.classes = {
+                c: i for i,c in enumerate(classes)
+            }
+        else:
+            self.classes = {
+                c: i for i,c in enumerate(self.get_classes(self.one_label)[0])
+            }
 
-        if self.one_label:
-            if self.classes:
-                self.classes = {
-                    c: i for i,c in enumerate(classes)
-                }
-            else:
-                self.classes = {
-                    c: i for i,c in enumerate(self.get_classes(self.one_label)[0])
-                }
-    
     
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
