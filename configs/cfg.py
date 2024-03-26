@@ -1,6 +1,6 @@
 from yacs.config import CfgNode as CN
 import os
-from utils.helpers import makedir
+from utils.util import makedir
 
 
 _C = CN()
@@ -22,7 +22,7 @@ _C.DATASET.NAME = "NA"
 _C.DATASET.NUM_CLASSES = 0
 _C.DATASET.IMAGE_SIZE = 0
 _C.DATASET.DATA_PATH = "NA"
-_C.DATASET.TRAIN_DIR = "NA "
+_C.DATASET.TRAIN_DIR = "NA"
 _C.DATASET.TEST_DIR = "NA"
 _C.DATASET.TRAIN_PUSH_DIR = "NA"
 _C.DATASET.TRAIN_BATCH_SIZE = 80
@@ -128,6 +128,20 @@ def update_cfg(cfg, args):
         # cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped_augmented")
         # cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_cropped")
         # cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped")
+        cfg.DATASET.TRAIN_BATCH_SIZE = 80
+        
+    elif args.dataset == "genetics":
+        cfg.MODEL.PROTOTYPE_SHAPE = (40 * 40, 128, 1, 1) 
+        cfg.MODEL.ADD_ON_LAYERS_TYPE = None 
+        
+        cfg.DATASET.DATA_PATH = os.path.join("data", "CUB_200_2011", "cub200_cropped")
+        cfg.DATASET.NAME = "bioscan"
+        cfg.DATASET.BIOSCAN.TAXONOMY_NAME = "family"
+        cfg.DATASET.BIOSCAN.ORDER_NAME = "Diptera"
+        cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720 
+        cfg.DATASET.NUM_CLASSES = 40
+        cfg.DATASET.IMAGE_SIZE = (4, 1, cfg.DATASET.BIOSCAN.CHOP_LENGTH)
+        cfg.DATASET.TRANSFORM = 'onehot'
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
 
     else: 

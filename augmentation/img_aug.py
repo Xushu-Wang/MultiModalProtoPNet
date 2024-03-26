@@ -1,7 +1,7 @@
 import Augmentor
 import os
 import argparse
-from utils.helpers import makedir
+from utils.util import makedir
         
         
 def img_augmentation(root_dir):

@@ -1,7 +1,6 @@
 import argparse, os
 import torch
-import utils.save as save
-from utils.log import create_logger
+from utils.util import save_model_w_condition, create_logger
 
 from  configs.cfg import get_cfg_defaults, update_cfg
 from dataio.dataset import get_dataset
@@ -12,8 +11,8 @@ from model.utils import get_optimizers
 import train.train_and_test as tnt
 
 import prototype.push as push
-import prototype.prune as prune
 
+    
 def main():
     cfg = get_cfg_defaults()
 
@@ -69,7 +68,7 @@ def main():
         # Testing Epochs
         accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
                         class_specific=class_specific, log=log)
-        save.save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'nopush', accu=accu,
+        save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'nopush', accu=accu,
                                     target_accu=0.70, log=log)
 
         # Pushing Epochs
@@ -91,7 +90,7 @@ def main():
             
             accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
                             class_specific=class_specific, log=log)
-            save.save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'push', accu=accu,
+            save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'push', accu=accu,
                                         target_accu=0.70, log=log)
 
             if cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION != 'linear':
@@ -102,7 +101,7 @@ def main():
                                   class_specific=class_specific, coefs=coefs, log=log)
                     accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
                                     class_specific=class_specific, log=log)
-                    save.save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
+                    save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
        
     logclose()
     

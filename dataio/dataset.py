@@ -10,7 +10,7 @@ def get_dataset(cfg):
         pass
     
     elif cfg.DATASET.NAME == 'genetics':
-        return 
+        return GeneticDataset(cfg.DATASET.DATAPATH, cfg.DATASET.TRANSFORM)
     
     elif cfg.DATASET.NAME == "cub":
         

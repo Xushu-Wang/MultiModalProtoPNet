@@ -1,6 +1,6 @@
 import time
 import torch
-from utils.helpers import list_of_distances
+from utils.util import list_of_distances
 
 
 
