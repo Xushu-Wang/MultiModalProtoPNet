@@ -97,6 +97,7 @@ def update_cfg(cfg, args):
     cfg.MODEL.BACKBONE = args.backbone
     cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION = "log" 
     cfg.MODEL.USE_COSINE = False 
+    cfg.DATASET.DATA_PATH = "data"
 
     if args.dataset == "cub": 
 
@@ -134,10 +135,11 @@ def update_cfg(cfg, args):
         cfg.MODEL.PROTOTYPE_SHAPE = (40 * 40, 128, 1, 1) 
         cfg.MODEL.ADD_ON_LAYERS_TYPE = None 
         
-        cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped_augmented")
-        cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_cropped")
-        cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped")       
-        cfg.DATASET.NAME = "bioscan"
+        cfg.DATASET.TRAIN_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M", "small_diptera_family-train.tsv"))
+        cfg.DATASET.VALIDATION_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M","small_diptera_family-validation.tsv"))
+        cfg.DATASET.TEST_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M","small_diptera_family-test.tsv"))
+        cfg.DATASET.TRAIN_PUSH_PATH = os.path.join(cfg.DATASET.DATA_PATH, "NOT SELECTED")       
+        cfg.DATASET.NAME = "genetics"
         cfg.DATASET.BIOSCAN.TAXONOMY_NAME = "family"
         cfg.DATASET.BIOSCAN.ORDER_NAME = "Diptera"
         cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720 
@@ -145,7 +147,7 @@ def update_cfg(cfg, args):
         cfg.DATASET.IMAGE_SIZE = (4, 1, cfg.DATASET.BIOSCAN.CHOP_LENGTH)
         cfg.DATASET.TRANSFORM = 'onehot'
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
-
+        cfg.DATASET.VALIDATION_BATCH_SIZE = 100
     else: 
         raise Exception("Invalid Dataset")
 

@@ -189,11 +189,12 @@ class GeneticDataset(Dataset):
     def __init__(self,
                  datapath: str,
                  transform='onehot',
-                 drop_level: str = None,
+                 level: str = None,
                  classes: list[str] = None
         ):
         
         self.data = pd.read_csv(datapath, sep="\t")
+        self.level = level
         
         if transform == 'onehot':
             self.transform = GeneticOneHot()
@@ -208,10 +209,10 @@ class GeneticDataset(Dataset):
         self.taxnomy_level = ["phylum", "class", "order", "family", "subfamily", "tribe", "genus", "species", "subspecies"]
 
 
-        if drop_level:
-            if not drop_level in self.taxnomy_level:
+        if self.level:
+            if not self.level in self.taxnomy_level:
                 raise ValueError(f"drop_level must be one of {self.taxnomy_level}")
-            self.data = self.data[self.data[drop_level] != "not_classified"]
+            self.data = self.data[self.data[self.level] != "not_classified"]
 
         if classes:
             self.classes = {
@@ -219,7 +220,7 @@ class GeneticDataset(Dataset):
             }
         else:
             self.classes = {
-                c: i for i,c in enumerate(self.get_classes(self.one_label)[0])
+                c: i for i,c in enumerate(self.get_classes(level)[0])
             }
 
     
@@ -231,9 +232,8 @@ class GeneticDataset(Dataset):
         if self.transform:
             genetics = self.transform(genetics)
 
-        if self.one_label:
-            label = label[self.taxnomy_level.index(self.one_label)]
-            label = torch.tensor(self.classes[label])
+        label = label[self.taxnomy_level.index(self.level)]
+        label = torch.tensor(self.classes[label])
             
         return genetics, label
     

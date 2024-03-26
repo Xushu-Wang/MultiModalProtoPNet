@@ -31,8 +31,6 @@ def main():
     log(str(cfg))
     print(cfg)
     
-    
-    
     # Get the dataset for training
     train_loader, train_push_loader, test_loader = get_dataset(cfg, log)
 

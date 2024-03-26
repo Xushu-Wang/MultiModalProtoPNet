@@ -27,7 +27,7 @@ def construct_ppnet(base_architecture, pretrained=True, img_size=224,
                  add_on_layers_type=add_on_layers_type)
 
 
-def construct_genetic_ppnet(length:int=720, num_classes:int=10, prototype_shape:int=(600, 24, 1, 1), model_path:str=None,prototype_activation_function='log'):
+def construct_genetic_ppnet(length:int=720, num_classes:int=10, prototype_shape:int=(600, 24, 1, 1), model_path:str=None,prototype_activation_function='log', use_cosine:bool=False):
     m = GeneticCNN(length, num_classes, two_dimensional=True)
 
     # Remove the fully connected layer
@@ -37,7 +37,7 @@ def construct_genetic_ppnet(length:int=720, num_classes:int=10, prototype_shape:
             del weights[k]
     m.load_state_dict(weights)
 
-    return PPNet(m, (4, length), prototype_shape, None, num_classes, False, prototype_activation_function, None, True)
+    return PPNet(m, (4, length), prototype_shape, None, num_classes, False, prototype_activation_function, None, True, use_cosine=use_cosine)
 
 
 
@@ -53,6 +53,8 @@ def construct_ppnet(cfg):
             add_on_layers_type=cfg.MODEL.ADD_ON_LAYERS_TYPE
         ).to(cfg.MODEL.DEVICE)
     elif cfg.DATASET.NAME == "genetics":
+        if not cfg.MODEL.BACKBONE:
+            raise ValueError("Model path not provided for genetics dataset (--backbone)")
         return construct_genetic_ppnet(
             length=cfg.DATASET.BIOSCAN.CHOP_LENGTH, 
             num_classes=cfg.DATASET.NUM_CLASSES, 

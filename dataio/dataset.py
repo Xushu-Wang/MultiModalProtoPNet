@@ -5,13 +5,13 @@ from torch.utils.data import Dataset, DataLoader
 
 
 
-def get_dataset(cfg):
+def get_dataset(cfg, log):
     if cfg.DATASET.NAME == 'bio1mscan':
         pass
     
     elif cfg.DATASET.NAME == 'genetics':
             
-        train_dataset = GeneticDataset(cfg.DATASET.TRAIN_DIR,
+        train_dataset = GeneticDataset(cfg.DATASET.TRAIN_PATH,
                               cfg.DATASET.TRANSFORM, 
                               cfg.DATASET.BIOSCAN.TAXONOMY_NAME)
         
@@ -21,18 +21,18 @@ def get_dataset(cfg):
             num_workers=4, pin_memory=False)
         
         
-        test_dataset = GeneticDataset(cfg.DATASET.TEST_DIR, 
+        validation_dataset = GeneticDataset(cfg.DATASET.TRAIN_PATH, 
                               cfg.DATASET.TRANSFORM,
                               cfg.DATASET.BIOSCAN.TAXONOMY_NAME,
-                              train_dataset.get_classes())
+                              train_dataset.get_classes(cfg.DATASET.BIOSCAN.TAXONOMY_NAME)[0])
         
         
-        test_loader = DataLoader(
-            test_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
+        validation_loader = DataLoader(
+            validation_dataset, batch_size=cfg.DATASET.VALIDATION_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
         
-        return train_loader, None, test_loader
+        return train_loader, None, validation_loader
     
     
     elif cfg.DATASET.NAME == "cub":
@@ -78,7 +78,6 @@ def get_dataset(cfg):
         test_loader = DataLoader(
             test_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
-        
         
         return train_loader, train_push_loader, test_loader
     
