@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
 
-from model.resnet_features import resnet18_features, resnet34_features, resnet50_features, resnet101_features, resnet152_features
-from model.densenet_features import densenet121_features, densenet161_features, densenet169_features, densenet201_features
-from model.vgg_features import vgg11_features, vgg11_bn_features, vgg13_features, vgg13_bn_features, vgg16_features, vgg16_bn_features,\
+from model.features.resnet_features import resnet18_features, resnet34_features, resnet50_features, resnet101_features, resnet152_features
+from model.features.densenet_features import densenet121_features, densenet161_features, densenet169_features, densenet201_features
+from model.features.vgg_features import vgg11_features, vgg11_bn_features, vgg13_features, vgg13_bn_features, vgg16_features, vgg16_bn_features,\
                          vgg19_features, vgg19_bn_features
 
 

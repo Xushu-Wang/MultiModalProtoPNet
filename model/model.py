@@ -1,8 +1,9 @@
 import torch
 
-from model.genetics_features import GeneticCNN2D
+from model.features.genetics_features import GeneticCNN2D
 from model.ppnet import PPNet, base_architecture_to_features
 from prototype.receptive_field import compute_proto_layer_rf_info_v2
+from model.multimodal_ppnet import construct_multimodal_ppnet
 
 
 def construct_ppnet(base_architecture, pretrained=True, img_size=224,
@@ -74,5 +75,7 @@ def construct_ppnet(cfg):
             prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION, 
             use_cosine=cfg.MODEL.USE_COSINE
         ).to(cfg.MODEL.DEVICE)
+    elif cfg.DATASET.NAME == "bioscan":
+        return construct_multimodal_ppnet()
     else: 
         raise NotImplementedError
