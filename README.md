@@ -1,1 +1,1 @@
-# MultiModalPPNet
+# Multi-Modal ProtoPNet
