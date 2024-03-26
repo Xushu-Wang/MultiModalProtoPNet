@@ -188,7 +188,7 @@ class GeneticDataset(Dataset):
 
     def __init__(self,
                  source: str,
-                 transform=None,
+                 transform=GeneticOneHot(),
                  drop_level: str = None,
                  allowed_classes: list[tuple[str, list[str]]]=None,
                  one_label: str = None,

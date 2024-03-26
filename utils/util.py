@@ -2,6 +2,7 @@ import os
 import torch
 import numpy as np
 
+
 def list_of_distances(X, Y):
     return torch.sum((torch.unsqueeze(X, dim=2) - torch.unsqueeze(Y.t(), dim=0)) ** 2, dim=1)
 
@@ -43,3 +44,29 @@ def find_high_activation_crop(activation_map, percentile=95):
             upper_x = j
             break
     return lower_y, upper_y+1, lower_x, upper_x+1
+
+
+
+def create_logger(log_filename, display=True):
+    f = open(log_filename, 'a+')
+    counter = [0]
+    # this function will still have access to f after create_logger terminates
+    def logger(text):
+        if display:
+            print(text)
+        f.write(text + '\n')
+        counter[0] += 1
+        if counter[0] % 10 == 0:
+            f.flush()
+            os.fsync(f.fileno())
+        # Question: do we need to flush()
+    return logger, f.close
+
+def save_model_w_condition(model, model_dir, model_name, accu, target_accu, log=print):
+    '''
+    model: this is not the multigpu model
+    '''
+    if accu > target_accu:
+        log('\tabove {0:.2f}%'.format(target_accu * 100))
+        # torch.save(obj=model.state_dict(), f=os.path.join(model_dir, (model_name + '{0:.4f}.pth').format(accu)))
+        torch.save(obj=model, f=os.path.join(model_dir, (model_name + '{0:.4f}.pth').format(accu)))

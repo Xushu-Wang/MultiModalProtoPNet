@@ -1,6 +1,6 @@
 from yacs.config import CfgNode as CN
 import os
-from utils.helpers import makedir
+from utils.util import makedir
 
 
 _C = CN()
@@ -22,7 +22,7 @@ _C.DATASET.NAME = "NA"
 _C.DATASET.NUM_CLASSES = 0
 _C.DATASET.IMAGE_SIZE = 0
 _C.DATASET.DATA_PATH = "NA"
-_C.DATASET.TRAIN_DIR = "NA "
+_C.DATASET.TRAIN_DIR = "NA"
 _C.DATASET.TEST_DIR = "NA"
 _C.DATASET.TRAIN_PUSH_DIR = "NA"
 _C.DATASET.TRAIN_BATCH_SIZE = 80
