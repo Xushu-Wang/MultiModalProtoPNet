@@ -190,7 +190,7 @@ class GeneticDataset(Dataset):
                  datapath: str,
                  transform='onehot',
                  level: str = None,
-                 classes: list[str] = None
+                 classes: dict = None
         ):
         
         self.data = pd.read_csv(datapath, sep="\t")

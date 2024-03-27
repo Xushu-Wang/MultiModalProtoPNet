@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 
 
 def get_dataset(cfg, log):
-    if cfg.DATASET.NAME == 'bio1mscan':
+    if cfg.DATASET.NAME == 'multimodal':
         pass
     
     elif cfg.DATASET.NAME == 'genetics':

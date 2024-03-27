@@ -124,7 +124,7 @@ def update_cfg(cfg, args):
         cfg.DATASET.NUM_CLASSES = 40
         cfg.DATASET.IMAGE_SIZE = 256
         
-        cfg.DATASET.DATA_PATH = os.path.join("data", "bioscan")
+        cfg.DATASET.DATA_PATH = "./bioscan"
         cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera_augmented")
         cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_diptera")
         cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera")
