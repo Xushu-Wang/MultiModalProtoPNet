@@ -35,7 +35,7 @@ def get_dataset(cfg, log):
         return train_loader, None, validation_loader
     
     
-    elif cfg.DATASET.NAME == "cub":
+    elif cfg.DATASET.NAME == "cub" or cfg.DATASET.NAME == "bioscan":
         
         normalize = transforms.Normalize(
             mean=cfg.DATASET.TRANSFORM_MEAN, 

@@ -1,12 +1,38 @@
 import torch
 
 from model.features.genetics_features import GeneticCNN2D
-from model.ppnet import PPNet, base_architecture_to_features
+from model.ppnet import PPNet
 from prototype.receptive_field import compute_proto_layer_rf_info_v2
-from model.multimodal_ppnet import construct_multimodal_ppnet
+from model.multimodal_ppnet import MultiModal_PPNet
+
+from model.features.resnet_features import resnet18_features, resnet34_features, resnet50_features, resnet101_features, resnet152_features
+from model.features.densenet_features import densenet121_features, densenet161_features, densenet169_features, densenet201_features
+from model.features.vgg_features import vgg11_features, vgg11_bn_features, vgg13_features, vgg13_bn_features, vgg16_features, vgg16_bn_features,\
+                         vgg19_features, vgg19_bn_features
 
 
-def construct_ppnet(base_architecture, pretrained=True, img_size=224,
+base_architecture_to_features = {'resnet18': resnet18_features,
+                                 'resnet34': resnet34_features,
+                                 'resnet50': resnet50_features,
+                                 'resnet101': resnet101_features,
+                                 'resnet152': resnet152_features,
+                                 'densenet121': densenet121_features,
+                                 'densenet161': densenet161_features,
+                                 'densenet169': densenet169_features,
+                                 'densenet201': densenet201_features,
+                                 'vgg11': vgg11_features,
+                                 'vgg11_bn': vgg11_bn_features,
+                                 'vgg13': vgg13_features,
+                                 'vgg13_bn': vgg13_bn_features,
+                                 'vgg16': vgg16_features,
+                                 'vgg16_bn': vgg16_bn_features,
+                                 'vgg19': vgg19_features,
+                                 'vgg19_bn': vgg19_bn_features}
+
+
+
+
+def construct_image_ppnet(base_architecture, pretrained=True, img_size=224,
                     prototype_shape=(2000, 512, 1, 1), num_classes=200,
                     prototype_activation_function='log',
                     add_on_layers_type='bottleneck'):
@@ -50,12 +76,17 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                  genetics_mode=True, 
                  use_cosine=True,
         )
+    
+    
+    
+def construct_multimodal_ppnet(cfg):
+    pass
 
 
 
 def construct_ppnet(cfg): 
-    if cfg.DATASET.NAME == "cub": 
-        return construct_ppnet(
+    if cfg.DATASET.NAME == "cub" or cfg.DATASET.NAME == 'bioscan': 
+        return construct_image_ppnet(
             base_architecture=cfg.MODEL.BACKBONE,
             pretrained=True,
             img_size=cfg.DATASET.IMAGE_SIZE, 
@@ -75,7 +106,7 @@ def construct_ppnet(cfg):
             prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION, 
             use_cosine=cfg.MODEL.USE_COSINE
         ).to(cfg.MODEL.DEVICE)
-    elif cfg.DATASET.NAME == "bioscan":
-        return construct_multimodal_ppnet()
+    elif cfg.DATASET.NAME == "multimodal":
+        pass
     else: 
         raise NotImplementedError

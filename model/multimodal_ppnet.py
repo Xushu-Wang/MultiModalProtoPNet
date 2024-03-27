@@ -5,13 +5,6 @@ import torch.nn.functional as F
 
 
 
-def construct_multimodal_ppnet():
-    pass
-
-
-
-
-
 class MultiModal_PPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
