@@ -152,7 +152,21 @@ def update_cfg(cfg, args):
         cfg.DATASET.VALIDATION_BATCH_SIZE = 100
         
     elif args.dataset == "multimodal":
-        pass
+        cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 
+        cfg.MODEL.ADD_ON_LAYERS_TYPE = "regular" 
+        
+        cfg.DATASET.NAME = "bioscan"
+        cfg.DATASET.NUM_CLASSES = 40
+        cfg.DATASET.IMAGE_SIZE = 256
+        
+        cfg.DATASET.DATA_PATH = "./bioscan"
+        cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera_augmented")
+        cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_diptera")
+        cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera")
+        
+        cfg.DATASET.TRAIN_BATCH_SIZE = 80
+        cfg.DATASET.TRANSFORM_MEAN = (0.485, 0.456, 0.406) 
+        cfg.DATASET.TRANSFORM_STD = (0.229, 0.224, 0.225)
     
     else: 
         raise Exception("Invalid Dataset")
