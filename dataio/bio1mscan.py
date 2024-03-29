@@ -8,6 +8,20 @@ import os
 from genetics import GeneticCGR, GeneticKmerFrequency, GeneticOneHot
 
 
+def extract_id(path):
+    # Find the index of the first occurrence of ".jpg"
+    jpg_index = path.find(".jpg")
+    if jpg_index == -1:
+        return None  # ".jpg" not found in the path
+    # Find the start of the ID by searching backwards from ".jpg" index
+    id_start_index = jpg_index
+    while id_start_index > 0 and path[id_start_index - 1].isdigit():
+        id_start_index -= 1
+    # Extract the ID substring
+    id_string = path[id_start_index:jpg_index]
+    return id_string
+
+
 class Bio1MScan(Dataset):
 
     """
@@ -47,7 +61,7 @@ class Bio1MScan(Dataset):
             self.genetic_transform = GeneticOneHot(
                 length=720, zero_encode_unknown=True, include_height_channel=True)
         elif genetic_transformation == 'kmer':
-            self.genetic_transform = GeneticOneHot()
+            self.genetic_transform = GeneticKmerFrequency()
         elif genetic_transformation == 'cgr':
             self.genetic_transform = GeneticCGR()
         else:
@@ -59,7 +73,7 @@ class Bio1MScan(Dataset):
 
         img, label = self.img_dataset[index]
 
-        sampleid = os.path.basename(path)
+        sampleid = extract_id(path)
 
         genetic = self.genetic_dataset[self.genetic_dataset['sampleid']
                                         == sampleid]['nucraw'].values[0]
