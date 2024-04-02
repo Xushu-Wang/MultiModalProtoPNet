@@ -66,7 +66,7 @@ _C.OPTIM.COEFS.CLST = 0.8
 _C.OPTIM.COEFS.SEP = -0.08 
 _C.OPTIM.COEFS.L1 = 1e-4 
 
-_C.OPTIM.NUM_TRAIN_EPOCHS = 1000
+_C.OPTIM.NUM_TRAIN_EPOCHS = 30
 _C.OPTIM.NUM_WARM_EPOCHS = 5
 
 _C.OPTIM.PUSH_START = 10
@@ -97,7 +97,6 @@ def update_cfg(cfg, args):
     cfg.MODEL.BACKBONE = args.backbone
     cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION = "log" 
     cfg.MODEL.USE_COSINE = False 
-    cfg.DATASET.DATA_PATH = "data"
 
     if args.dataset == "cub": 
 
@@ -105,31 +104,34 @@ def update_cfg(cfg, args):
         cfg.MODEL.ADD_ON_LAYERS_TYPE = "regular"
         
         cfg.DATASET.NAME = "cub"
-        cfg.DATASET.NUM_CLASSES = 200 
+        cfg.DATASET.NUM_CLASSES = 200
         cfg.DATASET.IMAGE_SIZE = 224
+        
         cfg.DATASET.DATA_PATH = os.path.join("data", "CUB_200_2011", "cub200_cropped")
         cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped_augmented")
         cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_cropped")
         cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped")
+        
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
         cfg.DATASET.TRANSFORM_MEAN = (0.485, 0.456, 0.406) 
         cfg.DATASET.TRANSFORM_STD = (0.229, 0.224, 0.225)
 
     elif args.dataset == "bioscan":
-        cfg.MODEL.PROTOTYPE_SHAPE = (40 * 40, 128, 1, 1) 
-        cfg.MODEL.ADD_ON_LAYERS_TYPE = None 
+        cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 
+        cfg.MODEL.ADD_ON_LAYERS_TYPE = "regular" 
         
         cfg.DATASET.NAME = "bioscan"
-        cfg.DATASET.BIOSCAN.TAXONOMY_NAME = "family"
-        cfg.DATASET.BIOSCAN.ORDER_NAME = "Diptera"
-        cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720 
         cfg.DATASET.NUM_CLASSES = 40
-        cfg.DATASET.IMAGE_SIZE = (4, 1, cfg.DATASET.BIOSCAN.CHOP_LENGTH)
-        # cfg.DATASET.DATA_PATH = os.path.join("data", "CUB_200_2011", "cub200_cropped")
-        # cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped_augmented")
-        # cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_cropped")
-        # cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_cropped")
+        cfg.DATASET.IMAGE_SIZE = 256
+        
+        cfg.DATASET.DATA_PATH = "./bioscan"
+        cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera_augmented")
+        cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_diptera")
+        cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera")
+        
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
+        cfg.DATASET.TRANSFORM_MEAN = (0.485, 0.456, 0.406) 
+        cfg.DATASET.TRANSFORM_STD = (0.229, 0.224, 0.225)
         
     elif args.dataset == "genetics":
         cfg.DATASET.NUM_CLASSES = 40
@@ -148,6 +150,24 @@ def update_cfg(cfg, args):
         cfg.DATASET.TRANSFORM = 'onehot'
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
         cfg.DATASET.VALIDATION_BATCH_SIZE = 100
+        
+    elif args.dataset == "multimodal":
+        cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 
+        cfg.MODEL.ADD_ON_LAYERS_TYPE = "regular" 
+        
+        cfg.DATASET.NAME = "bioscan"
+        cfg.DATASET.NUM_CLASSES = 40
+        cfg.DATASET.IMAGE_SIZE = 256
+        
+        cfg.DATASET.DATA_PATH = "./bioscan"
+        cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera_augmented")
+        cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_diptera")
+        cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera")
+        
+        cfg.DATASET.TRAIN_BATCH_SIZE = 80
+        cfg.DATASET.TRANSFORM_MEAN = (0.485, 0.456, 0.406) 
+        cfg.DATASET.TRANSFORM_STD = (0.229, 0.224, 0.225)
+    
     else: 
         raise Exception("Invalid Dataset")
 

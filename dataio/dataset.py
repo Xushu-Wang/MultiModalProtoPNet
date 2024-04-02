@@ -1,12 +1,12 @@
 from dataio.genetics import GeneticDataset
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 
 
 def get_dataset(cfg, log):
-    if cfg.DATASET.NAME == 'bio1mscan':
+    if cfg.DATASET.NAME == 'multimodal':
         pass
     
     elif cfg.DATASET.NAME == 'genetics':
@@ -34,7 +34,7 @@ def get_dataset(cfg, log):
         return train_loader, None, validation_loader
     
     
-    elif cfg.DATASET.NAME == "cub":
+    elif cfg.DATASET.NAME == "cub" or cfg.DATASET.NAME == "bioscan":
         
         normalize = transforms.Normalize(
             mean=cfg.DATASET.TRANSFORM_MEAN, 
