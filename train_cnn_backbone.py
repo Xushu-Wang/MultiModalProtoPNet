@@ -60,6 +60,7 @@ def main():
             optimizer.zero_grad()
 
             outputs = model(inputs)
+
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -96,7 +97,7 @@ def main():
         log(f"Epoch {epoch + 1} balanced accuracy: {balanced_accuracy}")
 
         # Save the model
-        if epoch >= 5:
+        if epoch >= 2:
             torch.save(model.state_dict(), os.path.join(cfg.OUTPUT.MODEL_DIR, f"{args.name}_{epoch}.pth"))
         
 

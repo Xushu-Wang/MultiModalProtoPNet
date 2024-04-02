@@ -30,6 +30,7 @@ base_architecture_to_features = {'resnet18': resnet18_features,
 
 
 
+
 class PPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
@@ -37,7 +38,12 @@ class PPNet(nn.Module):
                  add_on_layers_type='bottleneck',
                  genetics_mode=False, 
                  use_cosine=False,
+                 position_encode=4
          ):
+        
+        """
+        Note: position_encode is an overloaded argument. Pass 0 to disable position encoding, or a number to enable it. The number corresponds to the magnitude of the position encoding.
+        """
 
         super(PPNet, self).__init__()
         self.img_size = img_size
@@ -46,7 +52,16 @@ class PPNet(nn.Module):
         self.num_classes = num_classes
         self.epsilon = 1e-4
         self.use_cosine = use_cosine
-        
+        self.position_encode = position_encode
+
+        if self.position_encode:
+            # We add 2 to the prototype_shape to account for the position encoding
+            self.prototype_shape = (self.prototype_shape[0], self.prototype_shape[1] + 2, self.prototype_shape[2], self.prototype_shape[3])
+            if self.prototype_shape[2] != 1:
+                raise NotImplementedError("Position encoding only supported for 1xn prototypes")
+
+        print(self.prototype_shape)
+
         # prototype_activation_function could be 'log', 'linear',
         # or a generic function that converts distance to similarity score
         self.prototype_activation_function = prototype_activation_function
@@ -86,6 +101,8 @@ class PPNet(nn.Module):
             raise Exception('other base base_architecture NOT implemented')
 
         if add_on_layers_type == 'bottleneck':
+            if self.position_encode:
+                raise NotImplementedError("Position encoding not supported with bottleneck add-on layers")
             add_on_layers = []
             current_in_channels = first_add_on_layer_in_channels
             while (current_in_channels > self.prototype_shape[1]) or (len(add_on_layers) == 0):
@@ -108,10 +125,13 @@ class PPNet(nn.Module):
             if self.use_cosine:
                 self.add_on_layers = nn.Sequential()
             else:
+                proto_depth = self.prototype_shape[1]
+                if position_encode:
+                    proto_depth -= 2
                 self.add_on_layers = nn.Sequential(
-                    nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
+                    nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=proto_depth, kernel_size=1),
                     nn.ReLU(),
-                    nn.Conv2d(in_channels=self.prototype_shape[1], out_channels=self.prototype_shape[1], kernel_size=1),
+                    nn.Conv2d(in_channels=proto_depth, out_channels=proto_depth, kernel_size=1),
                     nn.Sigmoid()
                     )
         
@@ -126,6 +146,7 @@ class PPNet(nn.Module):
         self.last_layer = nn.Linear(self.num_prototypes, self.num_classes,
                                     bias=False) # do not use bias
 
+        print(init_weights)
         if init_weights:
             self._initialize_weights()
 
@@ -135,6 +156,9 @@ class PPNet(nn.Module):
         '''
         x = self.features(x)
         x = self.add_on_layers(x)
+        if self.position_encode:
+            x = self.add_position_encodings(x)
+
         return x
 
     @staticmethod
@@ -171,6 +195,7 @@ class PPNet(nn.Module):
         x2_patch_sum = F.conv2d(input=x2, weight=self.ones)
 
         p2 = self.prototype_vectors ** 2
+
         p2 = torch.sum(p2, dim=(1, 2, 3))
         # p2 is a vector of shape (num_prototypes,)
         # then we reshape it to (num_prototypes, 1, 1)
@@ -228,6 +253,26 @@ class PPNet(nn.Module):
 
         return F.conv2d(x_norm, normalized_prototypes)
 
+    def add_position_encodings(self, x):
+        """
+            Position Encoding Idea:
+            We want the dot product of two nearby encodings to be close to 1,
+            and the dot product of two faraway encodings to be close to 0.
+
+            We can achieve this by encoding positions into vectors along
+            the unit circle between theta=0 and theta = pi/2.
+
+            We append these vectors to the end of the latent space channels.
+        """
+        # x = F.normalize(x, dim=1)
+        th = torch.linspace(0, torch.pi /2, x.shape[3], device=x.device)
+        pos_1 = torch.cos(th)
+        pos_2 = torch.sin(th)
+
+        pos_vec = torch.stack([pos_1, pos_2], dim=0).repeat(x.shape[0], 1, 1).unsqueeze(2) * self.position_encode
+
+        return torch.cat([x, pos_vec], dim=1)
+    
     def push_forward(self, x):
         '''this method is needed for the pushing operation'''
         # Possibly better to go through and change push with this similarity metric

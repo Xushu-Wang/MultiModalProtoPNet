@@ -190,7 +190,8 @@ class GeneticDataset(Dataset):
                  datapath: str,
                  transform='onehot',
                  level: str = None,
-                 classes: list[str] = None
+                 classes: list[str] = None,
+                 max_class_count = 40
         ):
         
         self.data = pd.read_csv(datapath, sep="\t")
@@ -204,23 +205,34 @@ class GeneticDataset(Dataset):
             self.transform = GeneticCGR()
         else:
             self.transform = None
-            
-        
-        self.taxnomy_level = ["phylum", "class", "order", "family", "subfamily", "tribe", "genus", "species", "subspecies"]
 
+        self.taxnomy_level = ["phylum", "class", "order", "family", "subfamily", "tribe", "genus", "species", "subspecies"]
 
         if self.level:
             if not self.level in self.taxnomy_level:
                 raise ValueError(f"drop_level must be one of {self.taxnomy_level}")
             self.data = self.data[self.data[self.level] != "not_classified"]
 
+
+
         if classes:
             self.classes = {
                 c: i for i,c in enumerate(classes)
             }
+            self.data = self.data[self.data[self.level].isin(classes)]
         else:
+            classes, sizes = self.get_classes(level)
+
+            if len(classes) > max_class_count:
+                # Sort by size and take the top max_class_count
+                sizes = np.array(sizes)
+                classes = np.array(classes)
+                classes = classes[sizes.argsort()[-max_class_count:]]
+                self.data = self.data[self.data[self.level].isin(classes)]
+                classes, sizes = self.get_classes(level)
+
             self.classes = {
-                c: i for i,c in enumerate(self.get_classes(level)[0])
+                c: i for i,c in enumerate(classes)
             }
 
     

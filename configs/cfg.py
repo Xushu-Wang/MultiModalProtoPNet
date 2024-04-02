@@ -132,7 +132,8 @@ def update_cfg(cfg, args):
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
         
     elif args.dataset == "genetics":
-        cfg.MODEL.PROTOTYPE_SHAPE = (10 * 40, 128, 1, 1) 
+        cfg.DATASET.NUM_CLASSES = 40
+        cfg.MODEL.PROTOTYPE_SHAPE = (10 * cfg.DATASET.NUM_CLASSES, 128, 1, 8) 
         cfg.MODEL.ADD_ON_LAYERS_TYPE = None 
         
         cfg.DATASET.TRAIN_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M", "small_diptera_family-train.tsv"))
@@ -143,7 +144,6 @@ def update_cfg(cfg, args):
         cfg.DATASET.BIOSCAN.TAXONOMY_NAME = "family"
         cfg.DATASET.BIOSCAN.ORDER_NAME = "Diptera"
         cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720 
-        cfg.DATASET.NUM_CLASSES = 40
         cfg.DATASET.IMAGE_SIZE = (4, 1, cfg.DATASET.BIOSCAN.CHOP_LENGTH)
         cfg.DATASET.TRANSFORM = 'onehot'
         cfg.DATASET.TRAIN_BATCH_SIZE = 80

@@ -31,7 +31,6 @@ def get_dataset(cfg, log):
             validation_dataset, batch_size=cfg.DATASET.VALIDATION_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
-        
         return train_loader, None, validation_loader
     
     
