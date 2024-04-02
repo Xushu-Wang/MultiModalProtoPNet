@@ -13,7 +13,7 @@ class PPNet(nn.Module):
                  add_on_layers_type='bottleneck',
                  genetics_mode=False, 
                  use_cosine=False,
-                 position_encode=4
+                 position_encode=0
          ):
         
         """
@@ -30,12 +30,11 @@ class PPNet(nn.Module):
         self.position_encode = position_encode
 
         if self.position_encode:
+            assert (genetics_mode == True, "Position encoding only supported for genetic data.")
             # We add 2 to the prototype_shape to account for the position encoding
             self.prototype_shape = (self.prototype_shape[0], self.prototype_shape[1] + 2, self.prototype_shape[2], self.prototype_shape[3])
             if self.prototype_shape[2] != 1:
                 raise NotImplementedError("Position encoding only supported for 1xn prototypes")
-
-        print(self.prototype_shape)
 
         # prototype_activation_function could be 'log', 'linear',
         # or a generic function that converts distance to similarity score
