@@ -1,0 +1,8 @@
+torch==2.1.0
+torchvision==0.16
+Augmentor==0.2.12
+yacs
+gdown
+opencv-python
+matplotlib
+pandas
