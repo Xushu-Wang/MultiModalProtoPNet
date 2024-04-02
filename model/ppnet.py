@@ -30,7 +30,7 @@ class PPNet(nn.Module):
         self.position_encode = position_encode
 
         if self.position_encode:
-            assert (genetics_mode == True, "Position encoding only supported for genetic data.")
+            assert(genetics_mode)
             # We add 2 to the prototype_shape to account for the position encoding
             self.prototype_shape = (self.prototype_shape[0], self.prototype_shape[1] + 2, self.prototype_shape[2], self.prototype_shape[3])
             if self.prototype_shape[2] != 1:
