@@ -3,22 +3,44 @@
 This repo contains a PyTorch implementation for the multimodal version of protopnet
 
 
-## Dependency
+## Dependencies
 
-The following are packages needed for running this repo.
+First, create an environment and install the necessary dependencies. 
+```
+conda create -n protopnet python=3.10 
+conda activate protopnet 
+pip install -r requirements.txt
+```
 
-
-- PyTorch==2.0.1
-- Augmentor==0.2.12
-- numpy
-- pandas
-- cv2
-- matplotlib
-- yacs
+## Dataset Directory Structure 
+You want two folders in the base, `datasets` and `bioscan`. Once they are augmented and cropped, you should have a tree structure as
+such. 
+``` 
+.
+└── cub200_cropped
+    ├── test_cropped
+        ├── 001
+        ├── 002 
+        └── ... 
+    ├── train_cropped
+    └── train_cropped_augmented
+└── bioscan 
+    ├── test
+    ├── test_diptera
+    ├── train
+    ├── train_augmented
+    ├── train_diptera
+    └── train_diptera_augmented
+```
+If you're in the duke cs cluster, you can create a symlink to Andy's dataset. 
+```
+ln -s /usr/xtmp/xw214/datasets datasets 
+ln -s /usr/xtmp/xw214/bioscan bioscan 
+```
 
 ## Running the Experiment
 
-1. For images, augment the original dataset using augmentation/img_aug.py. The default target directory is root_dir + 'train_cropped_augmented/'
+1. For images, augment the original dataset using augmentation/img_aug.py. The default target directory is root_dir + `train_cropped_augmented/`. (Not completely implemented yet). 
 
 ```python img_aug.py --root_dir```
 

@@ -73,16 +73,16 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--bounding_boxes_file', type=str, default='./datasets/bounding_boxes.txt', 
+    parser.add_argument('--bounding_boxes_file', type=str, default='./datasets/CUB_200_2011/bounding_boxes.txt', 
                         help='txt file for bounding box')
     
-    parser.add_argument('--imgid_file', type=str, default='./datasets/images.txt', 
+    parser.add_argument('--imgid_file', type=str, default='./datasets/CUB_200_2011/images.txt', 
                         help='txt file for image id')
     
-    parser.add_argument('--images_folder', type=str, default='./datasets/cub200_cropped/', 
+    parser.add_argument('--images_folder', type=str, default='./datasets/CUB_200_2011/cub200_cropped/', 
                         help='Original Uncropped Images Folder')
     
-    parser.add_argument('--output_folder', type=str, default='./datasets/cub200_cropped/')
+    parser.add_argument('--output_folder', type=str, default='./datasets/CUB_200_2011/cub200_cropped/')
     
     args = parser.parse_args()
     
@@ -90,4 +90,4 @@ if __name__ == "__main__":
 
     img_id = read_image_id(args.imgid_file)
     
-    crop_images(args.images_folder, args.output_folder, args.bounding_boxes)
+    crop_images(args.images_folder, args.output_folder, bounding_boxes)

@@ -11,4 +11,4 @@
 
 eval "$(conda shell.bash hook)" 
 conda activate protopnet
-python3 MultiModalProtoPNet/main.py --dataset bioscan --backbone resnet50
+python3 main.py --dataset bioscan --backbone resnet50
