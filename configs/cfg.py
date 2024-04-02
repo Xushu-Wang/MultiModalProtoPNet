@@ -137,7 +137,8 @@ def update_cfg(cfg, args):
         cfg.DATASET.NUM_CLASSES = 40
         cfg.MODEL.PROTOTYPE_SHAPE = (10 * cfg.DATASET.NUM_CLASSES, 128, 1, 8) 
         cfg.MODEL.ADD_ON_LAYERS_TYPE = None 
-        
+        cfg.DATASET.DATA_PATH = "./data"
+
         cfg.DATASET.TRAIN_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M", "small_diptera_family-train.tsv"))
         cfg.DATASET.VALIDATION_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M","small_diptera_family-validation.tsv"))
         cfg.DATASET.TEST_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M","small_diptera_family-test.tsv"))

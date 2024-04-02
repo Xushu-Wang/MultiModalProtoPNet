@@ -11,6 +11,8 @@ def get_dataset(cfg, log):
     
     elif cfg.DATASET.NAME == 'genetics':
             
+        print(cfg.DATASET.TRAIN_PATH)
+
         train_dataset = GeneticDataset(cfg.DATASET.TRAIN_PATH,
                               cfg.DATASET.TRANSFORM, 
                               cfg.DATASET.BIOSCAN.TAXONOMY_NAME)
