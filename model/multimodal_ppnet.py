@@ -1,45 +1,56 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+                         
+from model.utils import position_encodings
 
 
 
-
-class MultiModal_PPNet(nn.Module):
+class SinglePPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
+                 prototype_distance_function = 'cosine',
                  prototype_activation_function='log',
-                 add_on_layers_type='bottleneck',
                  genetics_mode=False, 
-                 use_cosine=False,
-         ):
+                 position_encode=0
+        ):
+        
+        """
+        Note: position_encode is an overloaded argument. Pass 0 to disable position encoding, or a number to enable it. The number corresponds to the magnitude of the position encoding.
+        """
 
         super().__init__()
+        
         self.img_size = img_size
         self.prototype_shape = prototype_shape
         self.num_prototypes = prototype_shape[0]
         self.num_classes = num_classes
         self.epsilon = 1e-4
-        self.use_cosine = use_cosine
-        
+        self.prototype_distance_function = prototype_distance_function
+        self.position_encode = position_encode
+
+        if self.position_encode:
+            assert(genetics_mode)
+            # We add 2 to the prototype_shape to account for the position encoding
+            self.prototype_shape = (self.prototype_shape[0], self.prototype_shape[1] + 2, self.prototype_shape[2], self.prototype_shape[3])
+            if self.prototype_shape[2] != 1:
+                raise NotImplementedError("Position encoding only supported for 1xn prototypes")
+
         # prototype_activation_function could be 'log', 'linear',
         # or a generic function that converts distance to similarity score
         self.prototype_activation_function = prototype_activation_function
 
         # Ensure that we're using linear with cosine similarity
-        assert(not (use_cosine and prototype_activation_function != "linear"))
+        assert(not (prototype_distance_function == 'cosine' and prototype_activation_function != "linear"))
 
-        '''
-        Here we are initializing the class identities of the prototypes
-        Without domain specific knowledge we allocate the same number of
-        prototypes for each class
-        '''
+        
         assert(self.num_prototypes % self.num_classes == 0)
         # a onehot indication matrix for each prototype's class identity
-        self.prototype_class_identity = torch.zeros(self.num_prototypes,
-                                                    self.num_classes)
+        
+        self.prototype_class_identity = torch.zeros(self.num_prototypes, self.num_classes)
 
         num_prototypes_per_class = self.num_prototypes // self.num_classes
+        
         for j in range(self.num_prototypes):
             self.prototype_class_identity[j, j // num_prototypes_per_class] = 1
 
@@ -60,47 +71,37 @@ class MultiModal_PPNet(nn.Module):
         else:
             raise Exception('other base base_architecture NOT implemented')
 
-        if add_on_layers_type == 'bottleneck':
-            add_on_layers = []
-            current_in_channels = first_add_on_layer_in_channels
-            while (current_in_channels > self.prototype_shape[1]) or (len(add_on_layers) == 0):
-                current_out_channels = max(self.prototype_shape[1], (current_in_channels // 2))
-                add_on_layers.append(nn.Conv2d(in_channels=current_in_channels,
-                                               out_channels=current_out_channels,
-                                               kernel_size=1))
-                add_on_layers.append(nn.ReLU())
-                add_on_layers.append(nn.Conv2d(in_channels=current_out_channels,
-                                               out_channels=current_out_channels,
-                                               kernel_size=1))
-                if current_out_channels > self.prototype_shape[1]:
-                    add_on_layers.append(nn.ReLU())
-                else:
-                    assert(current_out_channels == self.prototype_shape[1])
-                    add_on_layers.append(nn.Sigmoid())
-                current_in_channels = current_in_channels // 2
-            self.add_on_layers = nn.Sequential(*add_on_layers)
-        else:
-            if self.use_cosine:
-                self.add_on_layers = nn.Sequential()
-            else:
-                self.add_on_layers = nn.Sequential(
-                    nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=self.prototype_shape[1], kernel_size=1),
-                    nn.ReLU(),
-                    nn.Conv2d(in_channels=self.prototype_shape[1], out_channels=self.prototype_shape[1], kernel_size=1),
-                    nn.Sigmoid()
-                    )
-        
-        self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
-                                              requires_grad=True)
 
-        # do not make this just a tensor,
-        # since it will not be moved automatically to gpu
+        if self.prototype_distance_function == 'cosine':
+            self.add_on_layers = nn.Sequential()
+            
+            self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
+                                requires_grad=True)
+            
+        elif self.prototype_distance_function == 'l2':
+            proto_depth = self.prototype_shape[1]
+            if position_encode:
+                proto_depth -= 2
+            self.add_on_layers = nn.Sequential(
+                nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=proto_depth, kernel_size=1),
+                nn.ReLU(),
+                nn.Conv2d(in_channels=proto_depth, out_channels=proto_depth, kernel_size=1),
+                nn.Sigmoid()
+            )
+            
+            self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
+                                requires_grad=True)
+            
+    
+
+
         self.ones = nn.Parameter(torch.ones(self.prototype_shape),
                                  requires_grad=False)
 
         self.last_layer = nn.Linear(self.num_prototypes, self.num_classes,
                                     bias=False) # do not use bias
 
+        print(init_weights)
         if init_weights:
             self._initialize_weights()
 
@@ -110,35 +111,19 @@ class MultiModal_PPNet(nn.Module):
         '''
         x = self.features(x)
         x = self.add_on_layers(x)
+        if self.position_encode:
+            x = self.position_encodings(x)
+
         return x
 
-    @staticmethod
-    def _weighted_l2_convolution(input, filter, weights):
-        '''
-        input of shape N * c * h * w
-        filter of shape P * c * h1 * w1
-        weight of shape P * c * h1 * w1
-        '''
-        input2 = input ** 2
-        input_patch_weighted_norm2 = F.conv2d(input=input2, weight=weights)
+    def cosine_similarity(self, x):
+        sqrt_dims = (self.prototype_shape[2] * self.prototype_shape[3]) ** .5
+        x_norm = F.normalize(x, dim=1) / sqrt_dims
+        normalized_prototypes = F.normalize(self.prototype_vectors, dim=1) / sqrt_dims
 
-        filter2 = filter ** 2
-        weighted_filter2 = filter2 * weights
-        filter_weighted_norm2 = torch.sum(weighted_filter2, dim=(1, 2, 3))
-        filter_weighted_norm2_reshape = filter_weighted_norm2.view(-1, 1, 1)
-
-        weighted_filter = filter * weights
-        weighted_inner_product = F.conv2d(input=input, weight=weighted_filter)
-
-        # use broadcast
-        intermediate_result = \
-            - 2 * weighted_inner_product + filter_weighted_norm2_reshape
-        # x2_patch_sum and intermediate_result are of the same shape
-        distances = F.relu(input_patch_weighted_norm2 + intermediate_result)
-
-        return distances
-
-    def _l2_convolution(self, x):
+        return F.conv2d(x_norm, normalized_prototypes)
+    
+    def l2_distance(self, x):
         '''
         apply self.prototype_vectors as l2-convolution filters on input x
         '''
@@ -146,6 +131,7 @@ class MultiModal_PPNet(nn.Module):
         x2_patch_sum = F.conv2d(input=x2, weight=self.ones)
 
         p2 = self.prototype_vectors ** 2
+
         p2 = torch.sum(p2, dim=(1, 2, 3))
         # p2 is a vector of shape (num_prototypes,)
         # then we reshape it to (num_prototypes, 1, 1)
@@ -158,60 +144,47 @@ class MultiModal_PPNet(nn.Module):
 
         return distances
 
-    def prototype_distances(self, x):
-        '''
-        x is the raw input
-        '''
-        distances = self._l2_convolution(x)
-        return distances
-
     def distance_2_similarity(self, distances):
         if self.prototype_activation_function == 'log':
             return torch.log((distances + 1) / (distances + self.epsilon))
         elif self.prototype_activation_function == 'linear':
             return -distances
         else:
-            return self.prototype_activation_function(distances)
+            raise NotImplementedError
 
     def forward(self, x):
+        
         conv_features = self.conv_features(x)
-        if self.use_cosine:
+        
+        if self.prototype_distance_function == 'cosine':
             similarity = self.cosine_similarity(conv_features)
             max_similarities = F.max_pool2d(similarity,
                             kernel_size=(similarity.size()[2],
                                         similarity.size()[3]))
             min_distances = -1 * max_similarities
         else:
-            distances = self.prototype_distances(conv_features)
-            '''
-            we cannot refactor the lines below for similarity scores
-            because we need to return min_distances
-            '''
+            distances = self.l2_distance(conv_features)
+            
             # global min pooling
             min_distances = -F.max_pool2d(-distances,
                                         kernel_size=(distances.size()[2],
                                                     distances.size()[3]))
+            
         min_distances = min_distances.view(-1, self.num_prototypes)
         prototype_activations = self.distance_2_similarity(min_distances)
         logits = self.last_layer(prototype_activations)
+        
         return logits, min_distances
-
-    def cosine_similarity(self, x):
-        sqrt_dims = (self.prototype_shape[2] * self.prototype_shape[3]) ** .5
-        x_norm = F.normalize(x, dim=1) / sqrt_dims
-        normalized_prototypes = F.normalize(self.prototype_vectors, dim=1) / sqrt_dims
-
-        return F.conv2d(x_norm, normalized_prototypes)
-
+    
     def push_forward(self, x):
         '''this method is needed for the pushing operation'''
         # Possibly better to go through and change push with this similarity metric
         conv_output = self.conv_features(x)
-        if self.use_cosine:
+        if self.prototype_distance_function == 'cosine':
             similarities = self.cosine_similarity(conv_output)
             distances = -1 * similarities
         else:
-            distances = self._l2_convolution(conv_output)
+            distances = self.l2_distance(conv_output)
         return conv_output, distances
 
     def prune_prototypes(self, prototypes_to_prune):
@@ -242,8 +215,6 @@ class MultiModal_PPNet(nn.Module):
         self.prototype_class_identity = self.prototype_class_identity[prototypes_to_keep, :]
 
     def __repr__(self):
-        # PPNet(self, features, img_size, prototype_shape,
-        # proto_layer_rf_info, num_classes, init_weights=True):
         rep = (
             'PPNet(\n'
             '\tfeatures: {},\n'
@@ -289,3 +260,64 @@ class MultiModal_PPNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
         self.set_last_layer_incorrect_connection(incorrect_strength=-0.5)
+
+
+
+class MultiModal_PPNet(nn.Module):
+    def __init__(self, img_features, genetic_features, img_size, genetic_size, img_prototype_shape,
+                 genetic_prototype_shape, proto_layer_rf_info, num_classes, init_weights=True,
+                 prototype_activation_function='linear',
+        ):
+
+        super().__init__()
+        
+        self.image_net = SinglePPNet(features=img_features,
+                 img_size=img_size,
+                 prototype_shape=img_prototype_shape,
+                 proto_layer_rf_info=proto_layer_rf_info,
+                 num_classes=num_classes,
+                 init_weights=True,
+                 prototype_distance_function='cosine',
+                 prototype_activation_function=prototype_activation_function
+                )
+        
+        self.genetic_net = SinglePPNet(features=genetic_features, 
+                 img_size=(4, 1, genetic_size),
+                 prototype_shape=genetic_prototype_shape,
+                 proto_layer_rf_info=None, 
+                 num_classes=num_classes,
+                 init_weights=True,
+                 prototype_distance_function='cosine',
+                 prototype_activation_function=prototype_activation_function, 
+                 genetics_mode=True,
+                )
+        
+        self.last_layer = nn.Linear(2 * num_classes, num_classes)
+        
+        
+    def forward(self, x):
+        
+        img_logit, img_dist = self.image_net(x)
+        genetic_logit, genetic_dist = self.genetic_net(x)
+        
+        combined_logits = torch.cat((img_logit, genetic_logit), dim=1)
+        logits = self.last_layer(combined_logits)
+        
+        return logits, img_dist, genetic_dist
+    
+    
+    def push_forward(self):
+        pass
+    
+    
+    def prune_prototypes(self):
+        pass
+    
+    
+    def initialize_weights(self):
+        pass
+        
+        
+        
+    
+        

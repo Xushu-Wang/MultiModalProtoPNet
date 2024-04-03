@@ -75,12 +75,15 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                  prototype_activation_function="linear", 
                  add_on_layers_type=None, 
                  genetics_mode=True, 
-                 use_cosine=True,
-        )
+                 use_cosine=True)
     
     
     
 def construct_multimodal_ppnet(cfg):
+    
+    
+    
+    
     pass
 
 def construct_ppnet(cfg): 

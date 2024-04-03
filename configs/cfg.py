@@ -163,9 +163,8 @@ def update_cfg(cfg, args):
         
     elif args.dataset == "multimodal":
         cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 
-        cfg.MODEL.ADD_ON_LAYERS_TYPE = "regular" 
         
-        cfg.DATASET.NAME = "bioscan"
+        cfg.DATASET.NAME = "multimodal"
         cfg.DATASET.NUM_CLASSES = 40
         cfg.DATASET.IMAGE_SIZE = 256
         
