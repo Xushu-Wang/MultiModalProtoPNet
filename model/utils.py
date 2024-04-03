@@ -1,4 +1,27 @@
 import torch
+
+
+def position_encodings(self, x):
+    
+    """
+        Position Encoding Idea:
+        We want the dot product of two nearby encodings to be close to 1,
+        and the dot product of two faraway encodings to be close to 0.
+
+        We can achieve this by encoding positions into vectors along
+        the unit circle between theta=0 and theta = pi/2.
+
+        We append these vectors to the end of the latent space channels.
+    """
+    
+    # x = F.normalize(x, dim=1)
+    th = torch.linspace(0, torch.pi /2, x.shape[3], device=x.device)
+    pos_1 = torch.cos(th)
+    pos_2 = torch.sin(th)
+
+    pos_vec = torch.stack([pos_1, pos_2], dim=0).repeat(x.shape[0], 1, 1).unsqueeze(2) * self.position_encode
+
+    return torch.cat([x, pos_vec], dim=1)
     
      
 def get_optimizers(cfg, ppnet): 
