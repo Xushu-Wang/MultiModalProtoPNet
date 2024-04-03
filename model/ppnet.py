@@ -3,9 +3,6 @@ import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
 
-
-
-
 class PPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
@@ -14,7 +11,7 @@ class PPNet(nn.Module):
                  genetics_mode=False, 
                  use_cosine=False,
                  position_encode=0
-         ):
+        ):
         
         """
         Note: position_encode is an overloaded argument. Pass 0 to disable position encoding, or a number to enable it. The number corresponds to the magnitude of the position encoding.

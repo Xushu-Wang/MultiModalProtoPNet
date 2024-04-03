@@ -1,7 +1,7 @@
 from yacs.config import CfgNode as CN
 import os
 from utils.util import makedir
-
+from dataio.caltech_bird import preprocess_cub_input_function
 
 _C = CN()
 
@@ -81,6 +81,7 @@ _C.OUTPUT.WEIGHT_MATRIX_FILENAME = "NA"
 _C.OUTPUT.PROTOTYPE_IMG_FILENAME_PREFIX = "NA" 
 _C.OUTPUT.PROTOTYPE_SELF_ACT_FILENAME_PREFIX = "NA" 
 _C.OUTPUT.PROTO_BOUND_BOXES_FILENAME_PREFIX = "NA" 
+_C.OUTPUT.NO_SAVE = False
 
 
 def get_cfg_defaults(): 
@@ -116,6 +117,8 @@ def update_cfg(cfg, args):
         cfg.DATASET.TRANSFORM_MEAN = (0.485, 0.456, 0.406) 
         cfg.DATASET.TRANSFORM_STD = (0.229, 0.224, 0.225)
 
+        cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION = preprocess_cub_input_function
+
     elif args.dataset == "bioscan":
         cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 
         cfg.MODEL.ADD_ON_LAYERS_TYPE = "regular" 
@@ -132,6 +135,8 @@ def update_cfg(cfg, args):
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
         cfg.DATASET.TRANSFORM_MEAN = (0.485, 0.456, 0.406) 
         cfg.DATASET.TRANSFORM_STD = (0.229, 0.224, 0.225)
+
+        cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION = preprocess_cub_input_function
         
     elif args.dataset == "genetics":
         cfg.DATASET.NUM_CLASSES = 40
@@ -151,6 +156,10 @@ def update_cfg(cfg, args):
         cfg.DATASET.TRANSFORM = 'onehot'
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
         cfg.DATASET.VALIDATION_BATCH_SIZE = 100
+
+        cfg.OUTPUT.IMG_DIR = None
+        cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION = None
+        cfg.OUTPUT.NO_SAVE = True
         
     elif args.dataset == "multimodal":
         cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 
