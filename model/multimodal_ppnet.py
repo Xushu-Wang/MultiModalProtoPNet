@@ -9,9 +9,9 @@ from model.utils import position_encodings
 class SinglePPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
+                 prototype_distance_function = 'cosine',
                  prototype_activation_function='log',
                  genetics_mode=False, 
-                 use_cosine=False,
                  position_encode=0
         ):
         
@@ -26,7 +26,7 @@ class SinglePPNet(nn.Module):
         self.num_prototypes = prototype_shape[0]
         self.num_classes = num_classes
         self.epsilon = 1e-4
-        self.use_cosine = use_cosine
+        self.prototype_distance_function = prototype_distance_function
         self.position_encode = position_encode
 
         if self.position_encode:
@@ -41,13 +41,8 @@ class SinglePPNet(nn.Module):
         self.prototype_activation_function = prototype_activation_function
 
         # Ensure that we're using linear with cosine similarity
-        assert(not (use_cosine and prototype_activation_function != "linear"))
+        assert(not (prototype_distance_function == 'cosine' and prototype_activation_function != "linear"))
 
-        '''
-        Here we are initializing the class identities of the prototypes
-        Without domain specific knowledge we allocate the same number of
-        prototypes for each class
-        '''
         
         assert(self.num_prototypes % self.num_classes == 0)
         # a onehot indication matrix for each prototype's class identity
@@ -77,9 +72,9 @@ class SinglePPNet(nn.Module):
             raise Exception('other base base_architecture NOT implemented')
 
 
-        if self.use_cosine:
+        if self.prototype_distance_function == 'cosine':
             self.add_on_layers = nn.Sequential()
-        else:
+        elif self.prototype_distance_function == 'l2':
             proto_depth = self.prototype_shape[1]
             if position_encode:
                 proto_depth -= 2
@@ -91,10 +86,10 @@ class SinglePPNet(nn.Module):
             )
             
             
-        if self.use_cosine:
+        if self.prototype_distance_function == 'cosine':
             self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
                                               requires_grad=True)
-        else:
+        elif self.prototype_distance_function == 'l2':
             self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
                                               requires_grad=True)
 
@@ -159,7 +154,7 @@ class SinglePPNet(nn.Module):
         
         conv_features = self.conv_features(x)
         
-        if self.use_cosine:
+        if self.prototype_distance_function == 'cosine':
             similarity = self.cosine_similarity(conv_features)
             max_similarities = F.max_pool2d(similarity,
                             kernel_size=(similarity.size()[2],
@@ -183,7 +178,7 @@ class SinglePPNet(nn.Module):
         '''this method is needed for the pushing operation'''
         # Possibly better to go through and change push with this similarity metric
         conv_output = self.conv_features(x)
-        if self.use_cosine:
+        if self.prototype_distance_function == 'cosine':
             similarities = self.cosine_similarity(conv_output)
             distances = -1 * similarities
         else:
@@ -280,7 +275,9 @@ class MultiModal_PPNet(nn.Module):
                  proto_layer_rf_info=proto_layer_rf_info,
                  num_classes=num_classes,
                  init_weights=True,
-                 prototype_activation_function=prototype_activation_function)
+                 prototype_distance_function='cosine',
+                 prototype_activation_function=prototype_activation_function
+                )
         
         self.genetic_net = SinglePPNet(features=genetic_features, 
                  img_size=(4, 1, genetic_size),
@@ -288,9 +285,10 @@ class MultiModal_PPNet(nn.Module):
                  proto_layer_rf_info=None, 
                  num_classes=num_classes,
                  init_weights=True,
+                 prototype_distance_function='cosine',
                  prototype_activation_function=prototype_activation_function, 
                  genetics_mode=True,
-                 use_cosine=True)
+                )
         
         self.last_layer = nn.Linear(2 * num_classes, num_classes)
         
