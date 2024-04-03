@@ -74,6 +74,10 @@ class SinglePPNet(nn.Module):
 
         if self.prototype_distance_function == 'cosine':
             self.add_on_layers = nn.Sequential()
+            
+            self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
+                                requires_grad=True)
+            
         elif self.prototype_distance_function == 'l2':
             proto_depth = self.prototype_shape[1]
             if position_encode:
@@ -85,13 +89,11 @@ class SinglePPNet(nn.Module):
                 nn.Sigmoid()
             )
             
-            
-        if self.prototype_distance_function == 'cosine':
-            self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
-                                              requires_grad=True)
-        elif self.prototype_distance_function == 'l2':
             self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
-                                              requires_grad=True)
+                                requires_grad=True)
+            
+    
+
 
         self.ones = nn.Parameter(torch.ones(self.prototype_shape),
                                  requires_grad=False)
