@@ -162,7 +162,7 @@ def update_cfg(cfg, args):
         cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720 
         
         cfg.MODEL.IMG_BACKBONE = args.backbone
-        cfg.MODEL.GENETIC_BACKBONE = 
+        cfg.MODEL.GENETIC_BACKBONE = os.path.join()
         
         cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION = "linear" 
 
