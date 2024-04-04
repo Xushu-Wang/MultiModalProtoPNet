@@ -22,7 +22,9 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                     proto_bound_boxes_filename_prefix=None,
                     save_prototype_class_identity=True, # which class the prototype image comes from
                     log=print,
-                    prototype_activation_function_in_numpy=None):
+                    prototype_activation_function_in_numpy=None,
+                    no_save=False
+):
 
     prototype_network_parallel.eval()
     log('\tpush')
@@ -96,7 +98,8 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                                    dir_for_saving_prototypes=proto_epoch_dir,
                                    prototype_img_filename_prefix=prototype_img_filename_prefix,
                                    prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
-                                   prototype_activation_function_in_numpy=prototype_activation_function_in_numpy)
+                                   prototype_activation_function_in_numpy=prototype_activation_function_in_numpy,
+                                   no_save=no_save)
 
     if proto_epoch_dir != None and proto_bound_boxes_filename_prefix != None:
         np.save(os.path.join(proto_epoch_dir, proto_bound_boxes_filename_prefix + '-receptive_field' + str(epoch_number) + '.npy'),
@@ -128,7 +131,8 @@ def update_prototypes_on_batch(search_batch_input,
                                dir_for_saving_prototypes=None,
                                prototype_img_filename_prefix=None,
                                prototype_self_act_filename_prefix=None,
-                               prototype_activation_function_in_numpy=None):
+                               prototype_activation_function_in_numpy=None,
+                               no_save=False):
 
     prototype_network_parallel.eval()
 
@@ -206,6 +210,9 @@ def update_prototypes_on_batch(search_batch_input,
             global_min_proto_dist[j] = batch_min_proto_dist_j
             global_min_fmap_patches[j] = batch_min_fmap_patch_j
             
+            if no_save:
+                continue
+
             # get the receptive field boundary of the image patch
             # that generates the representation
             protoL_rf_info = prototype_network_parallel.module.proto_layer_rf_info

@@ -4,7 +4,6 @@ from utils.util import save_model_w_condition, create_logger
 
 from  configs.cfg import get_cfg_defaults, update_cfg
 from dataio.dataset import get_dataset
-from dataio.caltech_bird import preprocess_cub_input_function
 
 from model.model import construct_ppnet
 from model.utils import get_optimizers
@@ -77,7 +76,7 @@ def main():
                 train_push_loader, # pytorch dataloader (must be unnormalized in [0,1])
                 prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                 class_specific=class_specific,
-                preprocess_input_function=preprocess_cub_input_function, # normalize if needed
+                preprocess_input_function=cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION, # normalize if needed
                 prototype_layer_stride=1,
                 root_dir_for_saving_prototypes=cfg.OUTPUT.IMG_DIR, # if not None, prototypes will be saved here
                 epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
@@ -85,7 +84,8 @@ def main():
                 prototype_self_act_filename_prefix=cfg.OUTPUT.PROTOTYPE_SELF_ACT_FILENAME_PREFIX,
                 proto_bound_boxes_filename_prefix=cfg.OUTPUT.PROTO_BOUND_BOXES_FILENAME_PREFIX,
                 save_prototype_class_identity=True,
-                log=log)
+                log=log,
+                no_save=cfg.OUTPUT.NO_SAVE)
             
             accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
                             class_specific=class_specific, log=log)

@@ -100,7 +100,6 @@ def compute_proto_layer_rf_info(img_size, cfg, prototype_kernel_size):
     return proto_layer_rf_info
 
 def compute_proto_layer_rf_info_v2(img_size, layer_filter_sizes, layer_strides, layer_paddings, prototype_kernel_size):
-
     assert(len(layer_filter_sizes) == len(layer_strides))
     assert(len(layer_filter_sizes) == len(layer_paddings))
 

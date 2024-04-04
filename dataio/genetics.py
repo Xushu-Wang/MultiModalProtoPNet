@@ -184,7 +184,6 @@ class GeneticDataset(Dataset):
         Returns:
             (genetics, label): A tuple containing the genetic data and the label (phylum, class, order, family, subfamily, tribe, genus, species, subspecies)
     """
-    
 
     def __init__(self,
                  datapath: str,
