@@ -1,4 +1,5 @@
 from dataio.genetics import GeneticDataset
+from dataio.bio1mscan import Bio1MScan
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
@@ -7,7 +8,64 @@ from torch.utils.data import DataLoader
 
 def get_dataset(cfg, log):
     if cfg.DATASET.NAME == 'multimodal':
-        pass
+        
+        normalize = transforms.Normalize(
+            mean=cfg.DATASET.TRANSFORM_MEAN, 
+            std=cfg.DATASET.TRANSFORM_STD
+        )
+
+        
+        train_dataset = Bio1MScan(
+            datapath = cfg.DATASET.GENETIC_DIR,
+            imgpath=cfg.DATASET.TRAIN_PATH,
+            img_transformation=transforms.Compose([
+                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.ToTensor(),
+                normalize,]),
+            genetic_transformation=cfg.DATASET.TRANSFORM,
+            genetic_level=cfg.DATASET.BIOSCAN.TAXONOMY_NAME
+        )
+        
+        
+        train_loader = DataLoader(
+            train_dataset, batch_size=cfg.DATASET.TRAIN_BATCH_SIZE, shuffle=True,
+            num_workers=4, pin_memory=False)
+        
+        
+        train_push_dataset = Bio1MScan(
+            datapath = cfg.DATASET.GENETIC_DIR,
+            imgpath=cfg.DATASET.TRAIN_PATH,
+            img_transformation=transforms.Compose([
+                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.ToTensor(),
+                normalize,]),
+            genetic_transformation=cfg.DATASET.TRANSFORM,
+            genetic_level=cfg.DATASET.BIOSCAN.TAXONOMY_NAME
+        )
+        
+        
+        train_push_loader = DataLoader(
+            train_push_dataset, batch_size=cfg.DATASET.TRAIN_PUSH_BATCH_SIZE, shuffle=False,
+            num_workers=4, pin_memory=False)
+        
+        test_dataset = Bio1MScan(
+            datapath = cfg.DATASET.GENETIC_DIR,
+            imgpath=cfg.DATASET.TRAIN_PATH,
+            img_transformation=transforms.Compose([
+                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.ToTensor(),
+                normalize,]),
+            genetic_transformation=cfg.DATASET.TRANSFORM,
+            genetic_level=cfg.DATASET.TRANSFORM,
+            genetic_classes= train_dataset.get_classes(cfg.DATASET.BIOSCAN.TAXONOMY_NAME)[0]
+        )
+        
+        test_loader = DataLoader(
+            test_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
+            num_workers=4, pin_memory=False)
+        
+        
+        return train_loader, train_push_loader, test_loader, 
     
     elif cfg.DATASET.NAME == 'genetics':
             
