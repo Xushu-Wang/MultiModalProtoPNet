@@ -169,14 +169,23 @@ def update_cfg(cfg, args):
         # cfg.OPTIM.COEFS.L1 = 0
         
     elif args.dataset == "multimodal":
-        cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 
+        cfg.MODEL.IMG_PROTOTYPE_SHAPE = (400, 128, 1, 1) 
+        cfg.MODEL.GENETIC_PROTOTYPE_SHAPE = (10 * cfg.DATASET.NUM_CLASSES, 128, 1, 8)
         
         cfg.DATASET.NAME = "multimodal"
         cfg.DATASET.NUM_CLASSES = 40
         cfg.DATASET.IMAGE_SIZE = 256
+        cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720 
+        
+        cfg.MODEL.IMG_BACKBONE = args.backbone
+        cfg.MODEL.GENETIC_BACKBONE = os.path.join()
+        
+        cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION = "linear" 
+
         
         cfg.DATASET.DATA_PATH = "./bioscan"
         cfg.DATASET.TRAIN_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera_augmented")
+        cfg.DATASET.GENETIC_DIR = os.path.join()
         cfg.DATASET.TEST_DIR = os.path.join(cfg.DATASET.DATA_PATH, "test_diptera")
         cfg.DATASET.TRAIN_PUSH_DIR = os.path.join(cfg.DATASET.DATA_PATH, "train_diptera")
         

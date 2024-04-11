@@ -5,7 +5,6 @@ import torch.nn.functional as F
 from model.utils import position_encodings
 
 
-
 class SinglePPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
@@ -92,8 +91,6 @@ class SinglePPNet(nn.Module):
             self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
                                 requires_grad=True)
             
-    
-
 
         self.ones = nn.Parameter(torch.ones(self.prototype_shape),
                                  requires_grad=False)
@@ -284,7 +281,7 @@ class MultiModal_PPNet(nn.Module):
         self.genetic_net = SinglePPNet(features=genetic_features, 
                  img_size=(4, 1, genetic_size),
                  prototype_shape=genetic_prototype_shape,
-                 proto_layer_rf_info=None, 
+                 proto_layer_rf_info=None,
                  num_classes=num_classes,
                  init_weights=True,
                  prototype_distance_function='cosine',
