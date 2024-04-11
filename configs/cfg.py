@@ -66,7 +66,7 @@ _C.OPTIM.COEFS.CLST = 0.8
 _C.OPTIM.COEFS.SEP = -0.08 
 _C.OPTIM.COEFS.L1 = 1e-4 
 
-_C.OPTIM.NUM_TRAIN_EPOCHS = 30
+_C.OPTIM.NUM_TRAIN_EPOCHS = 100
 _C.OPTIM.NUM_WARM_EPOCHS = 5
 
 _C.OPTIM.PUSH_START = 10
@@ -140,18 +140,20 @@ def update_cfg(cfg, args):
         
     elif args.dataset == "genetics":
         cfg.DATASET.NUM_CLASSES = 40
-        cfg.MODEL.PROTOTYPE_SHAPE = (10 * cfg.DATASET.NUM_CLASSES, 128, 1, 8) 
-        cfg.MODEL.ADD_ON_LAYERS_TYPE = None 
+        cfg.MODEL.PROTOTYPE_SHAPE = (40 * cfg.DATASET.NUM_CLASSES, 64, 1, 1) 
+        cfg.MODEL.ADD_ON_LAYERS_TYPE = None
+        cfg.MODEL.INIT_PPNET_WITH_LAST_LAYER = False 
+        cfg.MODEL.FIX_PROTOTYPES = True
         cfg.DATASET.DATA_PATH = "./data"
 
         cfg.DATASET.TRAIN_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M", "small_diptera_family-train.tsv"))
         cfg.DATASET.VALIDATION_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M","small_diptera_family-validation.tsv"))
         cfg.DATASET.TEST_PATH = os.path.join(cfg.DATASET.DATA_PATH, os.path.join("BIOSCAN-1M","small_diptera_family-test.tsv"))
-        cfg.DATASET.TRAIN_PUSH_PATH = os.path.join(cfg.DATASET.DATA_PATH, "NOT SELECTED")       
+        cfg.DATASET.TRAIN_PUSH_PATH = os.path.join(cfg.DATASET.DATA_PATH, "NOT SELECTED")
         cfg.DATASET.NAME = "genetics"
         cfg.DATASET.BIOSCAN.TAXONOMY_NAME = "family"
         cfg.DATASET.BIOSCAN.ORDER_NAME = "Diptera"
-        cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720 
+        cfg.DATASET.BIOSCAN.CHOP_LENGTH = 720
         cfg.DATASET.IMAGE_SIZE = (4, 1, cfg.DATASET.BIOSCAN.CHOP_LENGTH)
         cfg.DATASET.TRANSFORM = 'onehot'
         cfg.DATASET.TRAIN_BATCH_SIZE = 80
@@ -160,6 +162,11 @@ def update_cfg(cfg, args):
         cfg.OUTPUT.IMG_DIR = None
         cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION = None
         cfg.OUTPUT.NO_SAVE = True
+
+        # cfg.OPTIM.COEFS.CRS_ENT = 1 
+        # cfg.OPTIM.COEFS.CLST = 0.8 
+        # cfg.OPTIM.COEFS.SEP = -0.08 
+        # cfg.OPTIM.COEFS.L1 = 0
         
     elif args.dataset == "multimodal":
         cfg.MODEL.PROTOTYPE_SHAPE = (400, 128, 1, 1) 

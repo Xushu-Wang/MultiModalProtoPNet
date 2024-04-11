@@ -212,8 +212,6 @@ class GeneticDataset(Dataset):
                 raise ValueError(f"drop_level must be one of {self.taxnomy_level}")
             self.data = self.data[self.data[self.level] != "not_classified"]
 
-
-
         if classes:
             self.classes = {
                 c: i for i,c in enumerate(classes)

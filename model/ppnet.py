@@ -10,13 +10,11 @@ class PPNet(nn.Module):
                  add_on_layers_type='bottleneck',
                  genetics_mode=False, 
                  use_cosine=False,
-                 position_encode=0
+                 init_with_last_layer=False,
+                 last_layer_weights=None,
+                 fix_prototypes=False,
         ):
         
-        """
-        Note: position_encode is an overloaded argument. Pass 0 to disable position encoding, or a number to enable it. The number corresponds to the magnitude of the position encoding.
-        """
-
         super(PPNet, self).__init__()
         self.img_size = img_size
         self.prototype_shape = prototype_shape
@@ -24,14 +22,17 @@ class PPNet(nn.Module):
         self.num_classes = num_classes
         self.epsilon = 1e-4
         self.use_cosine = use_cosine
-        self.position_encode = position_encode
+        self.init_with_last_layer = init_with_last_layer
+        self.last_layer_weights = last_layer_weights
+        self.fix_prototypes = fix_prototypes
 
-        if self.position_encode:
-            assert(genetics_mode)
-            # We add 2 to the prototype_shape to account for the position encoding
-            self.prototype_shape = (self.prototype_shape[0], self.prototype_shape[1] + 2, self.prototype_shape[2], self.prototype_shape[3])
-            if self.prototype_shape[2] != 1:
-                raise NotImplementedError("Position encoding only supported for 1xn prototypes")
+        if self.init_with_last_layer:
+            raise NotImplementedError("init_with_last_layer not supported")
+            assert(last_layer_weights != None)
+
+        if self.fix_prototypes:
+            if self.prototype_shape[3] != 1:
+                raise NotImplementedError("Fix_prototypes only supported for 1x1 prototypes")
 
         # prototype_activation_function could be 'log', 'linear',
         # or a generic function that converts distance to similarity score
@@ -72,8 +73,6 @@ class PPNet(nn.Module):
             raise Exception('other base base_architecture NOT implemented')
 
         if add_on_layers_type == 'bottleneck':
-            if self.position_encode:
-                raise NotImplementedError("Position encoding not supported with bottleneck add-on layers")
             add_on_layers = []
             current_in_channels = first_add_on_layer_in_channels
             while (current_in_channels > self.prototype_shape[1]) or (len(add_on_layers) == 0):
@@ -97,8 +96,6 @@ class PPNet(nn.Module):
                 self.add_on_layers = nn.Sequential()
             else:
                 proto_depth = self.prototype_shape[1]
-                if position_encode:
-                    proto_depth -= 2
                 self.add_on_layers = nn.Sequential(
                     nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=proto_depth, kernel_size=1),
                     nn.ReLU(),
@@ -117,7 +114,6 @@ class PPNet(nn.Module):
         self.last_layer = nn.Linear(self.num_prototypes, self.num_classes,
                                     bias=False) # do not use bias
 
-        print(init_weights)
         if init_weights:
             self._initialize_weights()
 
@@ -127,8 +123,6 @@ class PPNet(nn.Module):
         '''
         x = self.features(x)
         x = self.add_on_layers(x)
-        if self.position_encode:
-            x = self.add_position_encodings(x)
 
         return x
 
@@ -217,33 +211,41 @@ class PPNet(nn.Module):
         logits = self.last_layer(prototype_activations)
         return logits, min_distances
 
+    def find_offsetting_tensor(self, x, normalized_prototypes):
+        """
+        This finds the tensor used to offset each prototype to a different spatial location.
+        """
+
+        # TODO - This should really only be done once on initialization.
+        # This is a major waste of time
+        arange1 = torch.arange(normalized_prototypes.shape[0] // self.num_classes).view((normalized_prototypes.shape[0]  // self.num_classes, 1)).repeat((1, normalized_prototypes.shape[0]  // self.num_classes))
+        indices = torch.LongTensor(torch.arange(normalized_prototypes.shape[0]  // self.num_classes))
+        arange2 = (arange1 - indices) % (normalized_prototypes.shape[0]  // self.num_classes)
+        arange3 = torch.arange(normalized_prototypes.shape[0]  // self.num_classes, x.shape[3])
+        arange3 = arange3.view((1, x.shape[3] - normalized_prototypes.shape[0]  // self.num_classes))
+        arange3 = arange3.repeat((normalized_prototypes.shape[0]  // self.num_classes, 1))
+        
+        arange4 = torch.concatenate((arange2, arange3), dim=1)
+        arange4 = arange4.unsqueeze(1).unsqueeze(1)
+        arange4 = arange4.repeat((1, x.shape[1], x.shape[2], 1))
+
+        arange4 = arange4.repeat((40,1,1,1))
+        arange4 = arange4.to(x.device)
+
+        return arange4
+
     def cosine_similarity(self, x):
         sqrt_dims = (self.prototype_shape[2] * self.prototype_shape[3]) ** .5
         x_norm = F.normalize(x, dim=1) / sqrt_dims
         normalized_prototypes = F.normalize(self.prototype_vectors, dim=1) / sqrt_dims
 
+        if self.fix_prototypes:
+            offsetting_tensor = self.find_offsetting_tensor(x, normalized_prototypes)
+            normalized_prototypes = F.pad(normalized_prototypes, (0, x.shape[3] - normalized_prototypes.shape[3], 0, 0))
+            normalized_prototypes = torch.gather(normalized_prototypes, 3, offsetting_tensor)
+
         return F.conv2d(x_norm, normalized_prototypes)
 
-    def add_position_encodings(self, x):
-        """
-            Position Encoding Idea:
-            We want the dot product of two nearby encodings to be close to 1,
-            and the dot product of two faraway encodings to be close to 0.
-
-            We can achieve this by encoding positions into vectors along
-            the unit circle between theta=0 and theta = pi/2.
-
-            We append these vectors to the end of the latent space channels.
-        """
-        # x = F.normalize(x, dim=1)
-        th = torch.linspace(0, torch.pi /2, x.shape[3], device=x.device)
-        pos_1 = torch.cos(th)
-        pos_2 = torch.sin(th)
-
-        pos_vec = torch.stack([pos_1, pos_2], dim=0).repeat(x.shape[0], 1, 1).unsqueeze(2) * self.position_encode
-
-        return torch.cat([x, pos_vec], dim=1)
-    
     def push_forward(self, x):
         '''this method is needed for the pushing operation'''
         # Possibly better to go through and change push with this similarity metric

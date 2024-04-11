@@ -19,7 +19,7 @@ def get_dataset(cfg, log):
             num_workers=4, pin_memory=False)
         
         
-        validation_dataset = GeneticDataset(cfg.DATASET.TRAIN_PATH, 
+        validation_dataset = GeneticDataset(cfg.DATASET.VALIDATION_PATH, 
                               cfg.DATASET.TRANSFORM,
                               cfg.DATASET.BIOSCAN.TAXONOMY_NAME,
                               train_dataset.get_classes(cfg.DATASET.BIOSCAN.TAXONOMY_NAME)[0])
