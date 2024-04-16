@@ -1,28 +1,35 @@
 import argparse, os
 import torch
 from utils.util import save_model_w_condition, create_logger
+from os import mkdir
 
-from  configs.cfg import get_cfg_defaults, update_cfg
+from  configs.cfg import get_cfg_defaults
 from dataio.dataset import get_dataset
 
 from model.model import construct_ppnet
 from model.utils import get_optimizers
+
 import train.train_and_test as tnt
+from train_multimodal import train_multimodal, test_multimodal
 
-import prototype.push as push
+import prototype.push as push       
 
-    
+
 def main():
     cfg = get_cfg_defaults()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpuid', type=str, default='0') 
-    parser.add_argument('--dataset', type=str, default='')
-    parser.add_argument('--backbone', type=str, default='')
+    parser.add_argument('--configs', type=str, default='cub.yaml')
     args = parser.parse_args()
 
     # Update the hyperparameters from default to the ones we mentioned in arguments
-    update_cfg(cfg, args) 
+    cfg.merge_from_file(args.configs)
+    
+    if not os.path.exists(cfg.OUTPUT.MODEL_DIR):
+        mkdir(cfg.OUTPUT.MODEL_DIR)
+    if not os.path.exists(cfg.OUTPUT.IMG_DIR):
+        mkdir(cfg.OUTPUT.IMG_DIR)
 
     # Create Logger Initially
     log, logclose = create_logger(log_filename=os.path.join(cfg.OUTPUT.MODEL_DIR, 'train.log'))
@@ -37,7 +44,13 @@ def main():
     ppnet_multi = torch.nn.DataParallel(ppnet) 
     class_specific = True
     
-    joint_optimizer, joint_lr_scheduler, warm_optimizer, last_layer_optimizer = get_optimizers(cfg, ppnet)
+    
+    if cfg.DATASET.NAME == 'multimodal':
+        ppnet_multi.load_state_dict_img(cfg.DATASET.IMG.MODEL_PATH)
+        ppnet_multi.load_state_dict_genetic(cfg.DATASET.GENETIC.MODEL_PATH)
+        last_layer_optimizer = get_optimizers(cfg, ppnet)
+    else: 
+        joint_optimizer, joint_lr_scheduler, warm_optimizer, last_layer_optimizer = get_optimizers(cfg, ppnet)
 
     log('start training')
     
@@ -46,28 +59,46 @@ def main():
         'crs_ent': cfg.OPTIM.COEFS.CRS_ENT,
         'clst': cfg.OPTIM.COEFS.CLST,
         'sep': cfg.OPTIM.COEFS.SEP,
-        'l1': cfg.OPTIM.COEFS.L1,
+        'l1': cfg.OPTIM.COEFS.L1
     }
-
-    for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
-        log('epoch: \t{0}'.format(epoch))
+    
+    
+    if cfg.DATASET.NAME == 'multimodal':
         
-        # Warm up and Training Epochs
-        if epoch < cfg.OPTIM.NUM_WARM_EPOCHS:
-            tnt.warm_only(model=ppnet_multi, log=log)
-            _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=warm_optimizer,
-                          class_specific=class_specific, coefs=coefs, log=log)
-        else:
-            tnt.joint(model=ppnet_multi, log=log)
-            joint_lr_scheduler.step()
-            _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=joint_optimizer,
-                          class_specific=class_specific, coefs=coefs, log=log)
+        for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
+            log('epoch: \t{0}'.format(epoch))
+            
+            ppnet_multi.last_layer()
+            
+            _ = train_multimodal(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer, 
+                            class_specific=class_specific, coefs=coefs, log=log)
+            
+            accu = test_multimodal(model=ppnet_multi, dataloader=test_loader,
+                            class_specific=class_specific, log=log)
+            
+            
+        logclose()
+        
+    else:
+        for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
+            log('epoch: \t{0}'.format(epoch))
+            
+            # Warm up and Training Epochs
+            if epoch < cfg.OPTIM.NUM_WARM_EPOCHS:
+                tnt.warm_only(model=ppnet_multi, log=log)
+                _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=warm_optimizer,
+                            class_specific=class_specific, coefs=coefs, log=log)
+            else:
+                tnt.joint(model=ppnet_multi, log=log)
+                joint_lr_scheduler.step()
+                _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=joint_optimizer,
+                            class_specific=class_specific, coefs=coefs, log=log)
 
-        # Testing Epochs
-        accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
-                        class_specific=class_specific, log=log)
-        save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'nopush', accu=accu,
-                                    target_accu=0.70, log=log)
+            # Testing Epochs
+            accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+                            class_specific=class_specific, log=log)
+            save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'nopush', accu=accu,
+                                        target_accu=0.70, log=log)
 
         # Pushing Epochs
         if epoch >= cfg.OPTIM.PUSH_START and epoch in cfg.OPTIM.PUSH_EPOCHS:
@@ -93,18 +124,18 @@ def main():
             save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'push', accu=accu,
                                         target_accu=0.70, log=log)
 
-            if cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION != 'linear':
-                tnt.last_only(model=ppnet_multi, log=log)
-                for i in range(20):
-                    log('iteration: \t{0}'.format(i))
-                    _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
-                                  class_specific=class_specific, coefs=coefs, log=log)
-                    accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
-                                    class_specific=class_specific, log=log)
-                    save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
-       
-    logclose()
-    
+                if cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION != 'linear':
+                    tnt.last_only(model=ppnet_multi, log=log)
+                    for i in range(20):
+                        log('iteration: \t{0}'.format(i))
+                        _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
+                                    class_specific=class_specific, coefs=coefs, log=log)
+                        accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+                                        class_specific=class_specific, log=log)
+                        save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
+        
+        logclose()
+        
 
 
 if __name__ == '__main__':

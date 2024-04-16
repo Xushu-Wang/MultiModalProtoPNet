@@ -1,5 +1,3 @@
-#placeholder dataset
-
 import torch
 
 mean = (0.485, 0.456, 0.406)
@@ -33,6 +31,3 @@ def undo_preprocess_input_function(x):
     pretrained model
     '''
     return undo_preprocess(x, mean=mean, std=std)
-
-    
-

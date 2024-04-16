@@ -8,20 +8,20 @@ def get_dataset(cfg, log):
     if cfg.DATASET.NAME == 'multimodal':
         
         normalize = transforms.Normalize(
-            mean=cfg.DATASET.TRANSFORM_MEAN, 
-            std=cfg.DATASET.TRANSFORM_STD
+            mean=cfg.DATASET.IMAGE.TRANSFORM_MEAN, 
+            std=cfg.DATASET.IMAGE.TRANSFORM_STD
         )
 
         
         train_dataset = Bio1MScan(
-            datapath = cfg.DATASET.GENETIC_DIR,
-            imgpath=cfg.DATASET.TRAIN_PATH,
+            datapath = cfg.DATASET.GENETIC.TRAIN_DIR,
+            imgpath=cfg.DATASET.IMAGE.TRAIN_DIR,
             img_transformation=transforms.Compose([
-                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
-                normalize,]),
-            genetic_transformation=cfg.DATASET.TRANSFORM,
-            genetic_level=cfg.DATASET.BIOSCAN.TAXONOMY_NAME
+                normalize]),
+            genetic_transformation=cfg.DATASET.GENETIC.TRANSFORM,
+            genetic_level=cfg.DATASET.GENETIC.TAXONOMY_NAME
         )
         
         
@@ -31,14 +31,14 @@ def get_dataset(cfg, log):
         
         
         train_push_dataset = Bio1MScan(
-            datapath = cfg.DATASET.GENETIC_DIR,
-            imgpath=cfg.DATASET.TRAIN_PATH,
+            datapath = cfg.DATASET.GENETIC.TRAIN_PUSH_DIR,
+            imgpath=cfg.DATASET.IMAGE.TRAIN_PUSH_DIR,
             img_transformation=transforms.Compose([
-                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
-                normalize,]),
-            genetic_transformation=cfg.DATASET.TRANSFORM,
-            genetic_level=cfg.DATASET.BIOSCAN.TAXONOMY_NAME
+                normalize]),
+            genetic_transformation=cfg.DATASET.GENETIC.TRANSFORM,
+            genetic_level=cfg.DATASET.GENETIC.TAXONOMY_NAME
         )
         
         
@@ -47,15 +47,15 @@ def get_dataset(cfg, log):
             num_workers=4, pin_memory=False)
         
         test_dataset = Bio1MScan(
-            datapath = cfg.DATASET.GENETIC_DIR,
-            imgpath=cfg.DATASET.TRAIN_PATH,
+            datapath = cfg.DATASET.GENETIC.TEST_DIR,
+            imgpath=cfg.DATASET.IMG.TEST_DIR,
             img_transformation=transforms.Compose([
-                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
                 normalize,]),
-            genetic_transformation=cfg.DATASET.TRANSFORM,
-            genetic_level=cfg.DATASET.TRANSFORM,
-            genetic_classes= train_dataset.get_classes(cfg.DATASET.BIOSCAN.TAXONOMY_NAME)[0]
+            genetic_transformation=cfg.DATASET.GENETIC.TRANSFORM,
+            genetic_level=cfg.DATASET.GENETIC.TAXONOMY_NAME,
+            genetic_classes= train_dataset.get_classes(cfg.DATASET.GENETIC.TAXONOMY_NAME)[0]
         )
         
         test_loader = DataLoader(
@@ -66,70 +66,70 @@ def get_dataset(cfg, log):
         return train_loader, train_push_loader, test_loader, 
     
     elif cfg.DATASET.NAME == 'genetics':
-        train_dataset = GeneticDataset(cfg.DATASET.TRAIN_PATH,
-                              cfg.DATASET.TRANSFORM, 
-                              cfg.DATASET.BIOSCAN.TAXONOMY_NAME)
+        train_dataset = GeneticDataset(cfg.DATASET.GENETIC.TRAIN_PATH,
+                              cfg.DATASET.GENETIC.TRANSFORM, 
+                              cfg.DATASET.GENETIC.TAXONOMY_NAME)
         
         train_loader = DataLoader(
             train_dataset, batch_size=cfg.DATASET.TRAIN_BATCH_SIZE, shuffle=True,
             num_workers=4, pin_memory=False)
         
         
-        validation_dataset = GeneticDataset(cfg.DATASET.VALIDATION_PATH, 
-                              cfg.DATASET.TRANSFORM,
-                              cfg.DATASET.BIOSCAN.TAXONOMY_NAME,
-                              train_dataset.get_classes(cfg.DATASET.BIOSCAN.TAXONOMY_NAME)[0])
+        test_dataset = GeneticDataset(cfg.DATASET.GENETIC.TRAIN_PATH, 
+                              cfg.DATASET.GENETIC.TRANSFORM,
+                              cfg.DATASET.GENETIC.TAXONOMY_NAME,
+                              train_dataset.get_classes(cfg.DATASET.GENETIC.TAXONOMY_NAME)[0])
         
         
-        validation_loader = DataLoader(
-            validation_dataset, batch_size=cfg.DATASET.VALIDATION_BATCH_SIZE, shuffle=False,
+        test_loader = DataLoader(
+            test_dataset, batch_size=cfg.DATASET.VALIDATION_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
-        return train_loader, train_loader, validation_loader
+        return train_loader, train_loader, test_loader
     
     
     elif cfg.DATASET.NAME == "cub" or cfg.DATASET.NAME == "bioscan":
         
         normalize = transforms.Normalize(
-            mean=cfg.DATASET.TRANSFORM_MEAN, 
-            std=cfg.DATASET.TRANSFORM_STD
+            mean=cfg.DATASET.IMAGE.TRANSFORM_MEAN, 
+            std=cfg.DATASET.IMAGE.TRANSFORM_STD
         )
 
         # train set
         train_dataset = datasets.ImageFolder(
             cfg.DATASET.TRAIN_DIR,
             transforms.Compose([
-                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
                 normalize,
             ]))
 
         train_loader = DataLoader(
-            train_dataset, batch_size=cfg.DATASET.TRAIN_BATCH_SIZE, shuffle=True,
+            train_dataset, batch_size=cfg.DATASET.IMAGE.TRAIN_BATCH_SIZE, shuffle=True,
             num_workers=4, pin_memory=False)
 
         # push set
         train_push_dataset = datasets.ImageFolder(
             cfg.DATASET.TRAIN_PUSH_DIR,
             transforms.Compose([
-                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
             ]))
         train_push_loader = DataLoader(
-            train_push_dataset, batch_size=cfg.DATASET.TRAIN_PUSH_BATCH_SIZE, shuffle=False,
+            train_push_dataset, batch_size=cfg.DATASET.IMAGE.TRAIN_PUSH_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
 
         # test set
         test_dataset = datasets.ImageFolder(
             cfg.DATASET.TEST_DIR,
             transforms.Compose([
-                transforms.Resize(size=(cfg.DATASET.IMAGE_SIZE, cfg.DATASET.IMAGE_SIZE)),
+                transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
                 normalize,
             ]))
 
         test_loader = DataLoader(
-            test_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
+            test_dataset, batch_size=cfg.DATASET.IMAGE.TEST_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
         return train_loader, train_push_loader, test_loader

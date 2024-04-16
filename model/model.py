@@ -34,8 +34,8 @@ base_architecture_to_features = {'resnet18': resnet18_features,
 
 def construct_image_ppnet(base_architecture, pretrained=True, img_size=224,
                     prototype_shape=(2000, 512, 1, 1), num_classes=200,
-                    prototype_activation_function='log',
-                    add_on_layers_type='bottleneck'):
+                    prototype_distance_function='l2', 
+                    prototype_activation_function='log'):
     
     features = base_architecture_to_features[base_architecture](pretrained=pretrained)
     layer_filter_sizes, layer_strides, layer_paddings = features.conv_info()
@@ -50,11 +50,11 @@ def construct_image_ppnet(base_architecture, pretrained=True, img_size=224,
                  proto_layer_rf_info=proto_layer_rf_info,
                  num_classes=num_classes,
                  init_weights=True,
-                 prototype_activation_function=prototype_activation_function,
-                 add_on_layers_type=add_on_layers_type)
+                 prototype_distance_function=prototype_distance_function,
+                 prototype_activation_function=prototype_activation_function)
 
 
-def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_activation_function='log', use_cosine=True, init_with_last_layer=False, fix_prototypes=True):
+def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_distance_function = 'cosine', prototype_activation_function='log', init_with_last_layer=False, fix_prototypes=True):
     m = GeneticCNN2D(length, num_classes, include_connected_layer=False, remove_last_layer=init_with_last_layer)
 
     # Remove the fully connected layer
@@ -78,10 +78,9 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                  proto_layer_rf_info=None, 
                  num_classes=num_classes,
                  init_weights=True, 
+                 prototype_distance_function=prototype_distance_function,
                  prototype_activation_function="linear", 
-                 add_on_layers_type=None, 
-                 genetics_mode=True, 
-                 use_cosine=True,
+                 genetics_mode=True,
                  init_with_last_layer=init_with_last_layer,
                  last_layer_weights=last_layer_weights,
                  fix_prototypes=fix_prototypes
@@ -132,35 +131,35 @@ def construct_ppnet(cfg):
         return construct_image_ppnet(
             base_architecture=cfg.MODEL.BACKBONE,
             pretrained=True,
-            img_size=cfg.DATASET.IMAGE_SIZE, 
-            prototype_shape=cfg.MODEL.PROTOTYPE_SHAPE, 
+            img_size=cfg.DATASET.IMAGE.SIZE, 
+            prototype_shape=cfg.MODEL.IMAGE.PROTOTYPE_SHAPE, 
             num_classes=cfg.DATASET.NUM_CLASSES, 
-            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION,
-            add_on_layers_type=cfg.MODEL.ADD_ON_LAYERS_TYPE
+            prototype_distance_function=cfg.MODEL.PROTOTYPE_DISTANCE_FUNCTION,
+            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION
         ).to(cfg.MODEL.DEVICE)
     elif cfg.DATASET.NAME == "genetics":
         if not cfg.MODEL.BACKBONE:
             raise ValueError("Model path not provided for genetics dataset (--backbone)")
         return construct_genetic_ppnet(
-            length=cfg.DATASET.BIOSCAN.CHOP_LENGTH, 
+            length=cfg.DATASET.GENETIC.SIZE, 
             num_classes=cfg.DATASET.NUM_CLASSES, 
-            prototype_shape=cfg.MODEL.PROTOTYPE_SHAPE, 
+            prototype_shape=cfg.MODEL.GENETIC.PROTOTYPE_SHAPE, 
             model_path=cfg.MODEL.BACKBONE, 
-            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION, 
-            use_cosine=cfg.MODEL.USE_COSINE,
+            prototype_distance_function=cfg.MODEL.PROTOTYPE_DISTANCE_FUNCTION,
+            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION,
             init_with_last_layer=cfg.MODEL.INIT_PPNET_WITH_LAST_LAYER,
             fix_prototypes=cfg.MODEL.FIX_PROTOTYPES
         ).to(cfg.MODEL.DEVICE)
     elif cfg.DATASET.NAME == "multimodal":
         return construct_multimodal_ppnet(
-            base_architecture=cfg.MODEL.IMG_BACKBONE,
-            img_size=cfg.DATASET.IMAGE_SIZE,
-            length=cfg.DATASET.BIOSCAN.CHOP_LENGTH, 
-            model_path = cfg.MODEL.GENETIC_BACKBONE,
-            img_prototype_shape=cfg.MODEL.IMG_PROTOTYPE_SHAPE,
-            genetic_prototype_shape=cfg.MODEL.GENETIC_PROTOTYPE_SHAPE,
+            base_architecture=cfg.MODEL.BACKBONE,
+            img_size=cfg.DATASET.IMAGE.SIZE,
+            length=cfg.DATASET.GENETIC.LENGTH, 
+            model_path = cfg.MODEL.GENETIC.DATA_PATH,
+            img_prototype_shape=cfg.MODEL.IMAGE.PROTOTYPE_SHAPE,
+            genetic_prototype_shape=cfg.MODEL.GENETIC.PROTOTYPE_SHAPE,
             num_classes=cfg.DATASET.NUM_CLASSES,
-            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION,
-        )
+            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION
+        ).to(cfg.MODEL.DEVICE)
     else: 
         raise NotImplementedError

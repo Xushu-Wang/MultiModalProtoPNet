@@ -3,7 +3,6 @@ import pandas as pd
 from torch.utils.data import Dataset
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-import os
 
 from dataio.genetics import GeneticCGR, GeneticKmerFrequency, GeneticOneHot
 
