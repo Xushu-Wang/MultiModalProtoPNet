@@ -12,9 +12,7 @@ class PPNet(nn.Module):
                  genetics_mode=False, 
                  fix_prototypes=False,
         ):
-        
-        super(PPNet, self).__init__()
-        
+                
         super().__init__()
         
         self.img_size = img_size
