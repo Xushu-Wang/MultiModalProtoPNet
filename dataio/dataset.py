@@ -4,8 +4,6 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 
-
-
 def get_dataset(cfg, log):
     if cfg.DATASET.NAME == 'multimodal':
         

@@ -54,8 +54,8 @@ def construct_image_ppnet(base_architecture, pretrained=True, img_size=224,
                  prototype_activation_function=prototype_activation_function)
 
 
-def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_distance_function = 'cosine', prototype_activation_function='log'):
-    m = GeneticCNN2D(length, num_classes, include_connected_layer=False, remove_last_layer=False)
+def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_distance_function = 'cosine', prototype_activation_function='log', init_with_last_layer=False, fix_prototypes=True):
+    m = GeneticCNN2D(length, num_classes, include_connected_layer=False, remove_last_layer=init_with_last_layer)
 
     # Remove the fully connected layer
     weights = torch.load(model_path)
@@ -64,6 +64,12 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
         if "conv" not in k:
             del weights[k]
     
+    if init_with_last_layer:
+        last_layer_weights = weights['conv3.weight']
+        print(last_layer_weights.shape)
+    else:
+        last_layer_weights = None
+
     m.load_state_dict(weights)
 
     return PPNet(features=m, 
@@ -74,7 +80,11 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                  init_weights=True, 
                  prototype_distance_function=prototype_distance_function,
                  prototype_activation_function="linear", 
-                 genetics_mode=True)
+                 genetics_mode=True,
+                 init_with_last_layer=init_with_last_layer,
+                 last_layer_weights=last_layer_weights,
+                 fix_prototypes=fix_prototypes
+    )
     
     
     
@@ -136,7 +146,9 @@ def construct_ppnet(cfg):
             prototype_shape=cfg.MODEL.GENETIC.PROTOTYPE_SHAPE, 
             model_path=cfg.MODEL.BACKBONE, 
             prototype_distance_function=cfg.MODEL.PROTOTYPE_DISTANCE_FUNCTION,
-            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION
+            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION,
+            init_with_last_layer=cfg.MODEL.INIT_PPNET_WITH_LAST_LAYER,
+            fix_prototypes=cfg.MODEL.FIX_PROTOTYPES
         ).to(cfg.MODEL.DEVICE)
     elif cfg.DATASET.NAME == "multimodal":
         return construct_multimodal_ppnet(

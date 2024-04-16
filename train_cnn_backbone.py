@@ -19,7 +19,7 @@ def main():
     cfg = get_cfg_defaults()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name', type=str, default='0') 
+    parser.add_argument('--name', type=str, default='cnn_backbone') 
     parser.add_argument('--gpuid', type=str, default='0') 
     parser.add_argument('--dataset', type=str, default='')
     parser.add_argument('--backbone', type=str, default='')

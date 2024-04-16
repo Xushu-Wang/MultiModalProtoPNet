@@ -10,6 +10,13 @@ class PPNet(nn.Module):
                  prototype_distance_function = 'cosine',
                  prototype_activation_function='log',
                  genetics_mode=False, 
+                 use_cosine=False,
+                 init_with_last_layer=False,
+                 last_layer_weights=None,
+                 fix_prototypes=False,
+        ):
+        
+        super(PPNet, self).__init__()
                  position_encode=0):
         
         """
@@ -23,6 +30,18 @@ class PPNet(nn.Module):
         self.num_prototypes = prototype_shape[0]
         self.num_classes = num_classes
         self.epsilon = 1e-4
+        self.use_cosine = use_cosine
+        self.init_with_last_layer = init_with_last_layer
+        self.last_layer_weights = last_layer_weights
+        self.fix_prototypes = fix_prototypes
+
+        if self.init_with_last_layer:
+            raise NotImplementedError("init_with_last_layer not supported")
+            assert(last_layer_weights != None)
+
+        if self.fix_prototypes:
+            if self.prototype_shape[3] != 1:
+                raise NotImplementedError("Fix_prototypes only supported for 1x1 prototypes")
         self.prototype_distance_function = prototype_distance_function
         self.position_encode = position_encode
 
@@ -63,6 +82,44 @@ class PPNet(nn.Module):
         elif genetics_mode:
             first_add_on_layer_in_channels = [i for i in features.modules() if isinstance(i, nn.Conv2d)][-1].out_channels
         else:
+            raise Exception('other base base_architecture NOT implemented')
+
+        if add_on_layers_type == 'bottleneck':
+            add_on_layers = []
+            current_in_channels = first_add_on_layer_in_channels
+            while (current_in_channels > self.prototype_shape[1]) or (len(add_on_layers) == 0):
+                current_out_channels = max(self.prototype_shape[1], (current_in_channels // 2))
+                add_on_layers.append(nn.Conv2d(in_channels=current_in_channels,
+                                               out_channels=current_out_channels,
+                                               kernel_size=1))
+                add_on_layers.append(nn.ReLU())
+                add_on_layers.append(nn.Conv2d(in_channels=current_out_channels,
+                                               out_channels=current_out_channels,
+                                               kernel_size=1))
+                if current_out_channels > self.prototype_shape[1]:
+                    add_on_layers.append(nn.ReLU())
+                else:
+                    assert(current_out_channels == self.prototype_shape[1])
+                    add_on_layers.append(nn.Sigmoid())
+                current_in_channels = current_in_channels // 2
+            self.add_on_layers = nn.Sequential(*add_on_layers)
+        else:
+            if self.use_cosine:
+                self.add_on_layers = nn.Sequential()
+            else:
+                proto_depth = self.prototype_shape[1]
+                self.add_on_layers = nn.Sequential(
+                    nn.Conv2d(in_channels=first_add_on_layer_in_channels, out_channels=proto_depth, kernel_size=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=proto_depth, out_channels=proto_depth, kernel_size=1),
+                    nn.Sigmoid()
+                    )
+        
+        self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
+                                              requires_grad=True)
+
+        # do not make this just a tensor,
+        # since it will not be moved automatically to gpu
             raise NotImplementedError
 
 
@@ -93,7 +150,6 @@ class PPNet(nn.Module):
         self.last_layer = nn.Linear(self.num_prototypes, self.num_classes,
                                     bias=False) # do not use bias
 
-        print(init_weights)
         if init_weights:
             self._initialize_weights()
 
@@ -164,6 +220,42 @@ class PPNet(nn.Module):
         logits = self.last_layer(prototype_activations)
         
         return logits, min_distances
+
+    def find_offsetting_tensor(self, x, normalized_prototypes):
+        """
+        This finds the tensor used to offset each prototype to a different spatial location.
+        """
+
+        # TODO - This should really only be done once on initialization.
+        # This is a major waste of time
+        arange1 = torch.arange(normalized_prototypes.shape[0] // self.num_classes).view((normalized_prototypes.shape[0]  // self.num_classes, 1)).repeat((1, normalized_prototypes.shape[0]  // self.num_classes))
+        indices = torch.LongTensor(torch.arange(normalized_prototypes.shape[0]  // self.num_classes))
+        arange2 = (arange1 - indices) % (normalized_prototypes.shape[0]  // self.num_classes)
+        arange3 = torch.arange(normalized_prototypes.shape[0]  // self.num_classes, x.shape[3])
+        arange3 = arange3.view((1, x.shape[3] - normalized_prototypes.shape[0]  // self.num_classes))
+        arange3 = arange3.repeat((normalized_prototypes.shape[0]  // self.num_classes, 1))
+        
+        arange4 = torch.concatenate((arange2, arange3), dim=1)
+        arange4 = arange4.unsqueeze(1).unsqueeze(1)
+        arange4 = arange4.repeat((1, x.shape[1], x.shape[2], 1))
+
+        arange4 = arange4.repeat((40,1,1,1))
+        arange4 = arange4.to(x.device)
+
+        return arange4
+
+    def cosine_similarity(self, x):
+        sqrt_dims = (self.prototype_shape[2] * self.prototype_shape[3]) ** .5
+        x_norm = F.normalize(x, dim=1) / sqrt_dims
+        normalized_prototypes = F.normalize(self.prototype_vectors, dim=1) / sqrt_dims
+
+        if self.fix_prototypes:
+            offsetting_tensor = self.find_offsetting_tensor(x, normalized_prototypes)
+            normalized_prototypes = F.pad(normalized_prototypes, (0, x.shape[3] - normalized_prototypes.shape[3], 0, 0))
+            normalized_prototypes = torch.gather(normalized_prototypes, 3, offsetting_tensor)
+
+        return F.conv2d(x_norm, normalized_prototypes)
+
     
     def push_forward(self, x):
         '''this method is needed for the pushing operation'''
