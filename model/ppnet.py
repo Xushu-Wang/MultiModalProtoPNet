@@ -15,10 +15,6 @@ class PPNet(nn.Module):
         
         super(PPNet, self).__init__()
         
-        """
-        Note: position_encode is an overloaded argument. Pass 0 to disable position encoding, or a number to enable it. The number corresponds to the magnitude of the position encoding.
-        """
-
         super().__init__()
         
         self.img_size = img_size
@@ -28,21 +24,10 @@ class PPNet(nn.Module):
         self.epsilon = 1e-4
         self.fix_prototypes = fix_prototypes
 
-        if self.init_with_last_layer:
-            raise NotImplementedError("init_with_last_layer not supported")
-            assert(last_layer_weights != None)
-
         if self.fix_prototypes:
             if self.prototype_shape[3] != 1:
                 raise NotImplementedError("Fix_prototypes only supported for 1x1 prototypes")
         self.prototype_distance_function = prototype_distance_function
-
-        if self.position_encode:
-            assert(genetics_mode)
-            # We add 2 to the prototype_shape to account for the position encoding
-            self.prototype_shape = (self.prototype_shape[0], self.prototype_shape[1] + 2, self.prototype_shape[2], self.prototype_shape[3])
-            if self.prototype_shape[2] != 1:
-                raise NotImplementedError("Position encoding only supported for 1xn prototypes")
 
         self.prototype_distance_function = prototype_distance_function
         self.prototype_activation_function = prototype_activation_function # 'log' or 'linear'
@@ -113,8 +98,6 @@ class PPNet(nn.Module):
         '''
         x = self.features(x)
         x = self.add_on_layers(x)
-        if self.position_encode:
-            x = self.position_encodings(x)
 
         return x
 

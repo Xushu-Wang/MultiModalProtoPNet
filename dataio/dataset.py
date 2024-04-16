@@ -75,17 +75,17 @@ def get_dataset(cfg, log):
             num_workers=4, pin_memory=False)
         
         
-        test_dataset = GeneticDataset(cfg.DATASET.GENETIC.TRAIN_PATH, 
+        validation_dataset = GeneticDataset(cfg.DATASET.GENETIC.VALIDATION_PATH, 
                               cfg.DATASET.GENETIC.TRANSFORM,
                               cfg.DATASET.GENETIC.TAXONOMY_NAME,
                               train_dataset.get_classes(cfg.DATASET.GENETIC.TAXONOMY_NAME)[0])
         
         
-        test_loader = DataLoader(
-            test_dataset, batch_size=cfg.DATASET.VALIDATION_BATCH_SIZE, shuffle=False,
+        validation_loader = DataLoader(
+            validation_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
-        return train_loader, train_loader, test_loader
+        return train_loader, train_loader, validation_loader
     
     
     elif cfg.DATASET.NAME == "cub" or cfg.DATASET.NAME == "bioscan":

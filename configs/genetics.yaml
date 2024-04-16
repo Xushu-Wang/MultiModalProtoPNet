@@ -1,28 +1,27 @@
 EXPERIMENT_RUN: 001
 
 MODEL:
-  PROTOTYPE_DISTANCE_FUNCTION: 'cosine'
-  PROTOTYPE_ACTIVATION_FUNCTION: 'linear'
-
+    PROTOTYPE_DISTANCE_FUNCTION: "cosine"
+    PROTOTYPE_ACTIVATION_FUNCTION: "linear"
+    BACKBONE: "saved_models/genetics_ppnet/237/40w-64-deep_6.pth"
 
 DATASET:
-  NAME: 'genetics'
-  NUM_CLASSES: 40
-  TRAIN_BATCH_SIZE: 80
-  TEST_BATCH_SIZE: 100
+    NAME: "genetics"
+    NUM_CLASSES: 40
+    TRAIN_BATCH_SIZE: 80
+    TEST_BATCH_SIZE: 100
 
-  GENETIC:
-  
-    SIZE: 720
-    PROTOTYPE_SHAPE: (400, 128, 1, 8)
-    TAXONOMY_NAME: 'family'
-    ORDER_NAME: 'Diptera'
-    TRANSFORM: 'onehot'
+    GENETIC:
+        SIZE: 720
+        TAXONOMY_NAME: "family"
+        ORDER_NAME: "Diptera"
+        TRANSFORM: "onehot"
+        PROTOTYPE_SHAPE: (1600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
+        FIX_PROTOTYPES: True
 
-    TRAIN_DIR: "./data/BIOSCAN-1M/small_diptera_family-train.tsv"
-    TRAIN_PUSH_DIR: "./data/BIOSCAN-1M/small_diptera_family-validation.tsv"
-    TEST_DIR: "./data/BIOSCAN-1M/small_diptera_family-test.tsv"
-
+        TRAIN_PATH: "./data/BIOSCAN-1M/small_diptera_family-train.tsv"
+        TRAIN_PUSH_DIR: "./data/BIOSCAN-1M/small_diptera_family-train.tsv"
+        VALIDATION_PATH: "./data/BIOSCAN-1M/small_diptera_family-validation.tsv"
 
 OUTPUT:
-  NO_SAVE: True
+    NO_SAVE: True

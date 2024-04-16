@@ -54,8 +54,8 @@ def construct_image_ppnet(base_architecture, pretrained=True, img_size=224,
                  prototype_activation_function=prototype_activation_function)
 
 
-def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_distance_function = 'cosine', prototype_activation_function='log', init_with_last_layer=False, fix_prototypes=True):
-    m = GeneticCNN2D(length, num_classes, include_connected_layer=False, remove_last_layer=init_with_last_layer)
+def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_path:str, prototype_distance_function = 'cosine', prototype_activation_function='log', fix_prototypes=True):
+    m = GeneticCNN2D(length, num_classes, include_connected_layer=False)
 
     # Remove the fully connected layer
     weights = torch.load(model_path)
@@ -64,12 +64,6 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
         if "conv" not in k:
             del weights[k]
     
-    if init_with_last_layer:
-        last_layer_weights = weights['conv3.weight']
-        print(last_layer_weights.shape)
-    else:
-        last_layer_weights = None
-
     m.load_state_dict(weights)
 
     return PPNet(features=m, 
@@ -81,8 +75,6 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                  prototype_distance_function=prototype_distance_function,
                  prototype_activation_function="linear", 
                  genetics_mode=True,
-                 init_with_last_layer=init_with_last_layer,
-                 last_layer_weights=last_layer_weights,
                  fix_prototypes=fix_prototypes
     )
     
@@ -143,12 +135,11 @@ def construct_ppnet(cfg):
         return construct_genetic_ppnet(
             length=cfg.DATASET.GENETIC.SIZE, 
             num_classes=cfg.DATASET.NUM_CLASSES, 
-            prototype_shape=cfg.MODEL.GENETIC.PROTOTYPE_SHAPE, 
+            prototype_shape=cfg.DATASET.GENETIC.PROTOTYPE_SHAPE, 
             model_path=cfg.MODEL.BACKBONE, 
             prototype_distance_function=cfg.MODEL.PROTOTYPE_DISTANCE_FUNCTION,
             prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION,
-            init_with_last_layer=cfg.MODEL.INIT_PPNET_WITH_LAST_LAYER,
-            fix_prototypes=cfg.MODEL.FIX_PROTOTYPES
+            fix_prototypes=cfg.DATASET.GENETIC.FIX_PROTOTYPES
         ).to(cfg.MODEL.DEVICE)
     elif cfg.DATASET.NAME == "multimodal":
         return construct_multimodal_ppnet(
@@ -157,7 +148,7 @@ def construct_ppnet(cfg):
             length=cfg.DATASET.GENETIC.LENGTH, 
             model_path = cfg.MODEL.GENETIC.DATA_PATH,
             img_prototype_shape=cfg.MODEL.IMAGE.PROTOTYPE_SHAPE,
-            genetic_prototype_shape=cfg.MODEL.GENETIC.PROTOTYPE_SHAPE,
+            genetic_prototype_shape=cfg.MODEL.DATASET.GENETIC.PROTOTYPE_SHAPE,
             num_classes=cfg.DATASET.NUM_CLASSES,
             prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION
         ).to(cfg.MODEL.DEVICE)
