@@ -33,7 +33,6 @@ def main():
 
     # Create Logger Initially
     log, logclose = create_logger(log_filename=os.path.join(cfg.OUTPUT.MODEL_DIR, 'train.log'))
-
     log(str(cfg))
     
     # Get the dataset for training

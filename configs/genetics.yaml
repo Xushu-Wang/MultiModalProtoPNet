@@ -25,3 +25,4 @@ DATASET:
 
 OUTPUT:
     NO_SAVE: True
+    MODEL_DIR: "saved_models/genetics_ppnet"
