@@ -85,7 +85,8 @@ def main():
                 proto_bound_boxes_filename_prefix=cfg.OUTPUT.PROTO_BOUND_BOXES_FILENAME_PREFIX,
                 save_prototype_class_identity=True,
                 log=log,
-                no_save=cfg.OUTPUT.NO_SAVE)
+                no_save=cfg.OUTPUT.NO_SAVE,
+                fix_prototypes=cfg.MODEL.FIX_PROTOTYPES)
             
             accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
                             class_specific=class_specific, log=log)

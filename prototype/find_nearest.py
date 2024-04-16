@@ -58,7 +58,8 @@ def find_k_nearest_patches_to_prototypes(dataloader, # pytorch dataloader (must 
                                          full_save=False, # save all the images
                                          root_dir_for_saving_images='./nearest',
                                          log=print,
-                                         prototype_activation_function_in_numpy=None):
+                                         prototype_activation_function_in_numpy=None,
+):
     prototype_network_parallel.eval()
     '''
     full_save=False will only return the class identity of the closest
@@ -85,7 +86,6 @@ def find_k_nearest_patches_to_prototypes(dataloader, # pytorch dataloader (must 
             # print('preprocessing input for pushing ...')
             # search_batch = copy.deepcopy(search_batch_input)
             search_batch = preprocess_input_function(search_batch_input)
-
         else:
             search_batch = search_batch_input
 
@@ -142,7 +142,6 @@ def find_k_nearest_patches_to_prototypes(dataloader, # pytorch dataloader (must 
                 else:
                     closest_patch = ImagePatchInfo(label=search_y[img_idx],
                                                    distance=closest_patch_distance_to_prototype_j)
-
 
                 # add to the j-th heap
                 if len(heaps[j]) < k:

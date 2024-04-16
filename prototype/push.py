@@ -23,7 +23,8 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                     save_prototype_class_identity=True, # which class the prototype image comes from
                     log=print,
                     prototype_activation_function_in_numpy=None,
-                    no_save=False
+                    no_save=False,
+                    fix_prototypes=False
 ):
 
     prototype_network_parallel.eval()
@@ -99,7 +100,9 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                                    prototype_img_filename_prefix=prototype_img_filename_prefix,
                                    prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
                                    prototype_activation_function_in_numpy=prototype_activation_function_in_numpy,
-                                   no_save=no_save)
+                                   no_save=no_save,
+                                   fix_prototypes=False
+)
 
     if proto_epoch_dir != None and proto_bound_boxes_filename_prefix != None:
         np.save(os.path.join(proto_epoch_dir, proto_bound_boxes_filename_prefix + '-receptive_field' + str(epoch_number) + '.npy'),
@@ -132,7 +135,9 @@ def update_prototypes_on_batch(search_batch_input,
                                prototype_img_filename_prefix=None,
                                prototype_self_act_filename_prefix=None,
                                prototype_activation_function_in_numpy=None,
-                               no_save=False):
+                               no_save=False,
+                               fix_prototypes=False
+):
 
     prototype_network_parallel.eval()
 
