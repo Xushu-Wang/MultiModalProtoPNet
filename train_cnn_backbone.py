@@ -4,7 +4,7 @@ from utils.util import save_model_w_condition, create_logger
 
 from  configs.cfg import get_cfg_defaults, update_cfg
 from dataio.dataset import get_dataset
-from dataio.caltech_bird import preprocess_cub_input_function
+from augmentation.img_preprocess import preprocess_cub_input_function
 
 from model.model import construct_ppnet
 from model.utils import get_optimizers

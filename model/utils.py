@@ -26,6 +26,18 @@ def position_encodings(self, x):
      
 def get_optimizers(cfg, ppnet): 
     
+    if cfg.DATASET.NAME == 'multimodal':
+        
+        last_layer_optimizer_specs = [
+            {
+                'params': ppnet.last_layer.parameters(), 
+                'lr': cfg.OPTIM.LAST_LAYER_OPTIMIZER_LAYERS.LR
+            }
+        ]
+        last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
+        
+        return last_layer_optimizer
+    
     joint_optimizer_specs = [
         {
             'params': ppnet.features.parameters(), 
@@ -41,7 +53,7 @@ def get_optimizers(cfg, ppnet):
             'params': ppnet.prototype_vectors, 
             'lr': cfg.OPTIM.JOINT_OPTIMIZER_LAYERS.PROTOTYPE_VECTORS
         },
-        ]
+    ]
     
     joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
     joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=cfg.OPTIM.JOINT_OPTIMIZER_LAYERS.LR_STEP_SIZE, gamma=0.1)
