@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
 
 
@@ -12,9 +11,7 @@ class PPNet(nn.Module):
                  genetics_mode=False,
                  fix_prototypes=False,
         ):
-        
-        super(PPNet, self).__init__()
-        
+                
         super().__init__()
         
         self.img_size = img_size
@@ -27,8 +24,7 @@ class PPNet(nn.Module):
         if self.fix_prototypes:
             if self.prototype_shape[3] != 1:
                 raise NotImplementedError("Fix_prototypes only supported for 1x1 prototypes")
-        self.prototype_distance_function = prototype_distance_function
-
+            
         self.prototype_distance_function = prototype_distance_function
         self.prototype_activation_function = prototype_activation_function # 'log' or 'linear'
 
