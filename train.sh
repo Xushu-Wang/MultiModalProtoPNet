@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 #SBATCH --job-name=protopnet_bioscan      # Job name
-#SBATCH --output=logs/my_job_log_%j.out
 #SBATCH --ntasks=1                    # Run on a single Node
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=160gb                  # Job memory request
@@ -11,4 +10,4 @@
 
 eval "$(conda shell.bash hook)" 
 conda activate protopnet
-python3 main.py --dataset bioscan --backbone resnet50
+python3 main.py --configs="configs/cub.yaml"
