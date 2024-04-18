@@ -100,38 +100,37 @@ def main():
                                         target_accu=0.70, log=log)
 
         # Pushing Epochs
-        if epoch >= cfg.OPTIM.PUSH_START and epoch in cfg.OPTIM.PUSH_EPOCHS:
-            
-            push.push_prototypes(
-                train_push_loader, # pytorch dataloader (must be unnormalized in [0,1])
-                prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
-                class_specific=class_specific,
-                preprocess_input_function=cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION, # normalize if needed
-                prototype_layer_stride=1,
-                root_dir_for_saving_prototypes=cfg.OUTPUT.IMG_DIR, # if not None, prototypes will be saved here
-                epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
-                prototype_img_filename_prefix=cfg.OUTPUT.PROTOTYPE_IMG_FILENAME_PREFIX,
-                prototype_self_act_filename_prefix=cfg.OUTPUT.PROTOTYPE_SELF_ACT_FILENAME_PREFIX,
-                proto_bound_boxes_filename_prefix=cfg.OUTPUT.PROTO_BOUND_BOXES_FILENAME_PREFIX,
-                save_prototype_class_identity=True,
-                log=log,
-                no_save=cfg.OUTPUT.NO_SAVE,
-                fix_prototypes=cfg.MODEL.FIX_PROTOTYPES)
-            
-            accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
-                            class_specific=class_specific, log=log)
-            save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'push', accu=accu,
-                                        target_accu=0.70, log=log)
+            if epoch >= cfg.OPTIM.PUSH_START and epoch in cfg.OPTIM.PUSH_EPOCHS:
+                push.push_prototypes(
+                    train_push_loader, # pytorch dataloader (must be unnormalized in [0,1])
+                    prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
+                    class_specific=class_specific,
+                    preprocess_input_function=cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION, # normalize if needed
+                    prototype_layer_stride=1,
+                    root_dir_for_saving_prototypes=cfg.OUTPUT.IMG_DIR, # if not None, prototypes will be saved here
+                    epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
+                    prototype_img_filename_prefix=cfg.OUTPUT.PROTOTYPE_IMG_FILENAME_PREFIX,
+                    prototype_self_act_filename_prefix=cfg.OUTPUT.PROTOTYPE_SELF_ACT_FILENAME_PREFIX,
+                    proto_bound_boxes_filename_prefix=cfg.OUTPUT.PROTO_BOUND_BOXES_FILENAME_PREFIX,
+                    save_prototype_class_identity=True,
+                    log=log,
+                    no_save=cfg.OUTPUT.NO_SAVE,
+                    fix_prototypes=cfg.DATASET.GENETIC.FIX_PROTOTYPES)
+                
+                accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+                                class_specific=class_specific, log=log)
+                save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'push', accu=accu,
+                                            target_accu=0.70, log=log)
 
-            if cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION != 'linear':
-                tnt.last_only(model=ppnet_multi, log=log)
-                for i in range(20):
-                    log('iteration: \t{0}'.format(i))
-                    _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
-                                class_specific=class_specific, coefs=coefs, log=log)
-                    accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
-                                    class_specific=class_specific, log=log)
-                    save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
+        if cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION != 'linear':
+            tnt.last_only(model=ppnet_multi, log=log)
+            for i in range(20):
+                log('iteration: \t{0}'.format(i))
+                _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
+                            class_specific=class_specific, coefs=coefs, log=log)
+                accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+                                class_specific=class_specific, log=log)
+                save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
         
         logclose()
         

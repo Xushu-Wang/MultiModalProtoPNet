@@ -9,7 +9,7 @@ class PPNet(nn.Module):
                  proto_layer_rf_info, num_classes, init_weights=True,
                  prototype_distance_function = 'cosine',
                  prototype_activation_function='log',
-                 genetics_mode=False, 
+                 genetics_mode=False,
                  fix_prototypes=False,
         ):
         
@@ -101,7 +101,7 @@ class PPNet(nn.Module):
 
         return x
 
-    def cosine_similarity(self, x):
+    def cosine_similarity(self, x, with_width_dim=False):
         sqrt_dims = (self.prototype_shape[2] * self.prototype_shape[3]) ** .5
         x_norm = F.normalize(x, dim=1) / sqrt_dims
         normalized_prototypes = F.normalize(self.prototype_vectors, dim=1) / sqrt_dims
@@ -110,6 +110,27 @@ class PPNet(nn.Module):
             offsetting_tensor = self.find_offsetting_tensor(x, normalized_prototypes)
             normalized_prototypes = F.pad(normalized_prototypes, (0, x.shape[3] - normalized_prototypes.shape[3], 0, 0))
             normalized_prototypes = torch.gather(normalized_prototypes, 3, offsetting_tensor)
+            if with_width_dim:
+                similarities = F.conv2d(x_norm, normalized_prototypes)
+                
+                # Take similarities from [80, 1600, 1, 1] to [80, 40, 40, 1]
+                similarities = similarities.reshape((similarities.shape[0], self.num_classes, similarities.shape[1] // self.num_classes, 1))
+                # Take similarities to [3200, 40, 1]
+                similarities = similarities.reshape((similarities.shape[0] * similarities.shape[1], similarities.shape[2], similarities.shape[3]))
+                # Take similarities to [3200, 40, 40]
+                similarities = F.pad(similarities, (0, x.shape[3] - similarities.shape[2], 0, 0), value=-1)
+                similarity_offsetting_tensor = self.find_offsetting_tensor_for_similarity(similarities)
+
+                # print(similarities.shape, similarity_offsetting_tensor.shape)
+                similarities = torch.gather(similarities, 2, similarity_offsetting_tensor)
+                # Take similarities to [80, 40, 40, 40]
+                similarities = similarities.reshape((similarities.shape[0] // self.num_classes, self.num_classes, similarities.shape[1], similarities.shape[2]))
+
+                # Take similarities to [80, 1600, 40]
+                similarities = similarities.reshape((similarities.shape[0], similarities.shape[1] * similarities.shape[2], similarities.shape[3]))
+                similarities = similarities.unsqueeze(2)
+
+                return similarities
 
         return F.conv2d(x_norm, normalized_prototypes)
     
@@ -140,7 +161,6 @@ class PPNet(nn.Module):
             raise NotImplementedError
 
     def forward(self, x):
-        
         conv_features = self.conv_features(x)
         
         if self.prototype_distance_function == 'cosine':
@@ -185,16 +205,34 @@ class PPNet(nn.Module):
         arange4 = arange4.to(x.device)
 
         return arange4
+    
+    def find_offsetting_tensor_for_similarity(self, similarities):
+        """
+        This finds the tensor used to offset each prototype to a different spatial location.
+        """
+        eye = torch.eye(similarities.shape[2])
+        eye = 1 - eye
+        eye = eye.unsqueeze(0).repeat((similarities.shape[0], 1,1))
+        eye = eye.to(torch.int64)
+
+        return eye.to(similarities.device)
 
     def push_forward(self, x):
         '''this method is needed for the pushing operation'''
         # Possibly better to go through and change push with this similarity metric
         conv_output = self.conv_features(x)
         if self.prototype_distance_function == 'cosine':
-            similarities = self.cosine_similarity(conv_output)
+            similarities = self.cosine_similarity(conv_output, with_width_dim=True)
             distances = -1 * similarities
         elif self.prototype_distance_function == 'l2':
             distances = self.l2_distance(conv_output)
+        return conv_output, distances
+
+    def push_forward_fixed(self,x):
+        conv_output = self.conv_features(x)
+        similarities = self.cosine_similarity(conv_output, with_width_dim=False)
+        distances = -1 * similarities
+
         return conv_output, distances
 
     def prune_prototypes(self, prototypes_to_prune):

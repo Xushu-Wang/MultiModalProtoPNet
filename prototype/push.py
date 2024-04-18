@@ -101,8 +101,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                                    prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
                                    prototype_activation_function_in_numpy=prototype_activation_function_in_numpy,
                                    no_save=no_save,
-                                   fix_prototypes=False
-)
+                                   fix_prototypes=fix_prototypes)
 
     if proto_epoch_dir != None and proto_bound_boxes_filename_prefix != None:
         np.save(os.path.join(proto_epoch_dir, proto_bound_boxes_filename_prefix + '-receptive_field' + str(epoch_number) + '.npy'),
@@ -152,7 +151,10 @@ def update_prototypes_on_batch(search_batch_input,
     with torch.no_grad():
         search_batch = search_batch.cuda()
         # this computation currently is not parallelized
-        protoL_input_torch, proto_dist_torch = prototype_network_parallel.module.push_forward(search_batch)
+        if fix_prototypes:
+            protoL_input_torch, proto_dist_torch = prototype_network_parallel.module.push_forward_fixed(search_batch)
+        else:
+            protoL_input_torch, proto_dist_torch = prototype_network_parallel.module.push_forward(search_batch)
 
     protoL_input_ = np.copy(protoL_input_torch.detach().cpu().numpy())
     proto_dist_ = np.copy(proto_dist_torch.detach().cpu().numpy())
@@ -187,11 +189,17 @@ def update_prototypes_on_batch(search_batch_input,
             # every example
             proto_dist_j = proto_dist_[:,j,:,:]
 
-        batch_min_proto_dist_j = np.amin(proto_dist_j)
+        if fix_prototypes:
+            batch_min_proto_dist_j = np.amin(proto_dist_j)
+        else:
+            batch_min_proto_dist_j = np.amin(proto_dist_j)
         if batch_min_proto_dist_j < global_min_proto_dist[j]:
-            batch_argmin_proto_dist_j = \
-                list(np.unravel_index(np.argmin(proto_dist_j, axis=None),
-                                      proto_dist_j.shape))
+            if fix_prototypes:
+                batch_argmin_proto_dist_j = [np.argmin(proto_dist_j[0]),0,j % 40]
+            else:
+                batch_argmin_proto_dist_j = \
+                    list(np.unravel_index(np.argmin(proto_dist_j, axis=None),
+                                        proto_dist_j.shape))
             if class_specific:
                 '''
                 change the argmin index from the index among
