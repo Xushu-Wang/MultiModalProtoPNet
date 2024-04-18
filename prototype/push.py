@@ -137,7 +137,6 @@ def update_prototypes_on_batch(search_batch_input,
                                no_save=False,
                                fix_prototypes=False
 ):
-
     prototype_network_parallel.eval()
 
     if preprocess_input_function is not None:
@@ -195,7 +194,7 @@ def update_prototypes_on_batch(search_batch_input,
             batch_min_proto_dist_j = np.amin(proto_dist_j)
         if batch_min_proto_dist_j < global_min_proto_dist[j]:
             if fix_prototypes:
-                batch_argmin_proto_dist_j = [np.argmin(proto_dist_j[0]),0,j % 40]
+                batch_argmin_proto_dist_j = [np.argmin(proto_dist_j[:,0,0]),0,(j % 40)]
             else:
                 batch_argmin_proto_dist_j = \
                     list(np.unravel_index(np.argmin(proto_dist_j, axis=None),

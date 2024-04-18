@@ -106,6 +106,7 @@ class PPNet(nn.Module):
             offsetting_tensor = self.find_offsetting_tensor(x, normalized_prototypes)
             normalized_prototypes = F.pad(normalized_prototypes, (0, x.shape[3] - normalized_prototypes.shape[3], 0, 0))
             normalized_prototypes = torch.gather(normalized_prototypes, 3, offsetting_tensor)
+            
             if with_width_dim:
                 similarities = F.conv2d(x_norm, normalized_prototypes)
                 
@@ -218,7 +219,7 @@ class PPNet(nn.Module):
         # Possibly better to go through and change push with this similarity metric
         conv_output = self.conv_features(x)
         if self.prototype_distance_function == 'cosine':
-            similarities = self.cosine_similarity(conv_output, with_width_dim=True)
+            similarities = self.cosine_similarity(conv_output)
             distances = -1 * similarities
         elif self.prototype_distance_function == 'l2':
             distances = self.l2_distance(conv_output)
@@ -226,7 +227,7 @@ class PPNet(nn.Module):
 
     def push_forward_fixed(self,x):
         conv_output = self.conv_features(x)
-        similarities = self.cosine_similarity(conv_output, with_width_dim=False)
+        similarities = self.cosine_similarity(conv_output)
         distances = -1 * similarities
 
         return conv_output, distances

@@ -122,15 +122,15 @@ def main():
                 save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'push', accu=accu,
                                             target_accu=0.70, log=log)
 
-        if cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION != 'linear':
-            tnt.last_only(model=ppnet_multi, log=log)
-            for i in range(20):
-                log('iteration: \t{0}'.format(i))
-                _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
-                            class_specific=class_specific, coefs=coefs, log=log)
-                accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
-                                class_specific=class_specific, log=log)
-                save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
+                if cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION != 'linear' or True:
+                    tnt.last_only(model=ppnet_multi, log=log)
+                    for i in range(20):
+                        log('iteration: \t{0}'.format(i))
+                        _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
+                                    class_specific=class_specific, coefs=coefs, log=log)
+                        accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+                                        class_specific=class_specific, log=log)
+                        save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
         
         logclose()
         

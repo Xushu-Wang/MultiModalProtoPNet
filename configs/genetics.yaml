@@ -27,3 +27,6 @@ OUTPUT:
     NO_SAVE: True
     MODEL_DIR: "saved_models/genetics_ppnet"
     IMG_DIR: "saved_models/genetics_ppnet"
+OPTIM:
+    PUSH_START: 5
+    PUSH_EPOCHS: [5, 10, 15, 20, 30, 40, 50, 60, 70, 80]
