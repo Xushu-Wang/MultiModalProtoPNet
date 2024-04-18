@@ -10,4 +10,4 @@
 
 eval "$(conda shell.bash hook)" 
 conda activate protopnet
-python3 main.py --configs="configs/cub.yaml"
+python3 main.py --configs="configs/bioscan.yaml"

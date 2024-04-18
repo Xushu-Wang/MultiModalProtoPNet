@@ -97,7 +97,7 @@ def get_dataset(cfg, log):
 
         # train set
         train_dataset = datasets.ImageFolder(
-            cfg.DATASET.TRAIN_DIR,
+            cfg.DATASET.IMAGE.TRAIN_DIR,
             transforms.Compose([
                 transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
@@ -110,7 +110,7 @@ def get_dataset(cfg, log):
 
         # push set
         train_push_dataset = datasets.ImageFolder(
-            cfg.DATASET.TRAIN_PUSH_DIR,
+            cfg.DATASET.IMAGE.TRAIN_PUSH_DIR,
             transforms.Compose([
                 transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
@@ -121,7 +121,7 @@ def get_dataset(cfg, log):
 
         # test set
         test_dataset = datasets.ImageFolder(
-            cfg.DATASET.TEST_DIR,
+            cfg.DATASET.IMAGE.TEST_DIR,
             transforms.Compose([
                 transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
