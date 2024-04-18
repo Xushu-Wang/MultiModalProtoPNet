@@ -5,8 +5,8 @@ __pycache__/
 models/
 logs/
 scripts/
-pretrained_models/
-muchang.py
 saved_models/
 .DS_STORE
 slurm*.out
+
+

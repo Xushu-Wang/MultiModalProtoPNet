@@ -14,10 +14,10 @@ DATASET:
   IMAGE: 
     SIZE: 256
     PROTOTYPE_SHAPE: (2000, 128, 1, 1)
-    MODEL_PATH: "./bioscan"
-    TRAIN_DIR: "./bioscan/train_diptera_augmented"
-    TEST_DIR: "./bioscan/test_diptera"
-    TRAIN_PUSH_DIR: "./bioscan/train_diptera"
+    MODEL_PATH: "datasets/bioscan" # should be updated 
+    TRAIN_DIR: "datasets/bioscan/train_diptera_augmented"
+    TEST_DIR: "datasets/bioscan/test_diptera"
+    TRAIN_PUSH_DIR: "datasets/bioscan/train_diptera"
     TRANSFORM_MEAN: (0.485, 0.456, 0.406)
     TRANSFORM_STD: (0.229, 0.224, 0.225)
 
@@ -29,10 +29,9 @@ DATASET:
     TRANSFORM: 'onehot'
 
     MODEL_PATH: "./data"
-    TRAIN_DIR: ""
-    TEST_DIR: ""
-    TRAIN_PUSH_DIR: ""
-
+    TRAIN_DIR: "datasets/genetics/small_diptera_family-train.tsv"
+    TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
+    TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-validation.tsv"
 
 OUTPUT:
   MODEL_DIR: "./saved_models"

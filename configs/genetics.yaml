@@ -3,7 +3,7 @@ EXPERIMENT_RUN: 001
 MODEL:
     PROTOTYPE_DISTANCE_FUNCTION: "cosine"
     PROTOTYPE_ACTIVATION_FUNCTION: "linear"
-    BACKBONE: "saved_models/genetics_ppnet/237/40w-64-deep_6.pth"
+    BACKBONE: "pretrained_backbones/40w-64-deep_6.pth"
 
 DATASET:
     NAME: "genetics"
@@ -18,15 +18,14 @@ DATASET:
         TRANSFORM: "onehot"
         PROTOTYPE_SHAPE: (1600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         FIX_PROTOTYPES: True
-
-        TRAIN_PATH: "./data/BIOSCAN-1M/small_diptera_family-train.tsv"
-        TRAIN_PUSH_DIR: "./data/BIOSCAN-1M/small_diptera_family-train.tsv"
-        VALIDATION_PATH: "./data/BIOSCAN-1M/small_diptera_family-validation.tsv"
+        TRAIN_PATH: "datasets/genetics/small_diptera_family-train.tsv"
+        TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
+        VALIDATION_PATH: "datasets/genetics/small_diptera_family-validation.tsv"
 
 OUTPUT:
     NO_SAVE: True
-    MODEL_DIR: "saved_models/genetics_ppnet"
-    IMG_DIR: "saved_models/genetics_ppnet"
+    MODEL_DIR: "saved_models/genetics"
+    IMG_DIR: "saved_models/genetics"
 OPTIM:
     PUSH_START: 5
     PUSH_EPOCHS: [5, 10, 15, 20, 30, 40, 50, 60, 70, 80]
