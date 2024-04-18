@@ -38,6 +38,12 @@ ln -s /usr/xtmp/xw214/datasets datasets
 ln -s /usr/xtmp/xw214/bioscan bioscan 
 ```
 
+## Downloading the CNN pretrained backbone layer for genetics dataset 
+Call `gdown` in the `saved_models` directory. 
+```
+gdown 1qTRhdvujg4FyNNa3s0W-w-XOLkgLcNTW
+```
+
 ## Running the Experiment
 
 1. For images, augment the original dataset using augmentation/img_aug.py. The default target directory is root_dir + `train_cropped_augmented/`. (Not completely implemented yet). 

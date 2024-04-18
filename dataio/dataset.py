@@ -105,7 +105,7 @@ def get_dataset(cfg, log):
             ]))
 
         train_loader = DataLoader(
-            train_dataset, batch_size=cfg.DATASET.IMAGE.TRAIN_BATCH_SIZE, shuffle=True,
+            train_dataset, batch_size=cfg.DATASET.TRAIN_BATCH_SIZE, shuffle=True,
             num_workers=4, pin_memory=False)
 
         # push set
@@ -116,7 +116,7 @@ def get_dataset(cfg, log):
                 transforms.ToTensor(),
             ]))
         train_push_loader = DataLoader(
-            train_push_dataset, batch_size=cfg.DATASET.IMAGE.TRAIN_PUSH_BATCH_SIZE, shuffle=False,
+            train_push_dataset, batch_size=cfg.DATASET.TRAIN_PUSH_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
 
         # test set
@@ -129,7 +129,7 @@ def get_dataset(cfg, log):
             ]))
 
         test_loader = DataLoader(
-            test_dataset, batch_size=cfg.DATASET.IMAGE.TEST_BATCH_SIZE, shuffle=False,
+            test_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
         return train_loader, train_push_loader, test_loader

@@ -7,18 +7,19 @@ DATASET:
     NAME: cub
     NUM_CLASSES: 200
     TRAIN_BATCH_SIZE: 80
+    TEST_BATCH_SIZE: 80
 
     IMAGE:
         IMAGE_SIZE: 224
-        TRAIN_DIR: "data/CUB_200_2011/cub200_cropped/train_cropped_augmented"
-        TEST_DIR: "data/CUB_200_2011/cub200_cropped/test_cropped"
-        TRAIN_PUSH_DIR: "data/CUB_200_2011/cub200_cropped/train_cropped"
+        TRAIN_DIR: "xw214/datasets/cub200_cropped/train_cropped_augmented"
+        TEST_DIR: "xw214/datasets/cub200_cropped/test_cropped"
+        TRAIN_PUSH_DIR: "xw214/datasets/cub200_cropped/train_cropped"
         TRANSFORM_MEAN: [0.485, 0.456, 0.406]
         TRANSFORM_STD: [0.229, 0.224, 0.225]
 
 OUTPUT:
-    MODEL_DIR: "saved_models/cub_ppnet/001"
-    IMG_DIR: "saved_models/cub_ppnet/001/img"
+    MODEL_DIR: "xw214/saved_models_cub/vgg19/003"
+    IMG_DIR: "xw214/saved_models_cub/vgg19/003/img"
     WEIGHT_MATRIX_FILENAME: "outputL_weights"
     PROTOTYPE_IMG_FILENAME_PREFIX: "prototype-img"
     PROTOTYPE_SELF_ACT_FILENAME_PREFIX: "prototype-self-act"

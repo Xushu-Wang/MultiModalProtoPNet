@@ -124,7 +124,7 @@ def construct_ppnet(cfg):
             base_architecture=cfg.MODEL.BACKBONE,
             pretrained=True,
             img_size=cfg.DATASET.IMAGE.SIZE, 
-            prototype_shape=cfg.MODEL.IMAGE.PROTOTYPE_SHAPE, 
+            prototype_shape=cfg.MODEL.PROTOTYPE_SHAPE, 
             num_classes=cfg.DATASET.NUM_CLASSES, 
             prototype_distance_function=cfg.MODEL.PROTOTYPE_DISTANCE_FUNCTION,
             prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION
