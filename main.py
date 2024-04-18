@@ -23,17 +23,8 @@ def main():
     parser.add_argument('--configs', type=str, default='cub.yaml')
     args = parser.parse_args()
 
-    print(cfg) 
-    print("-------------")
-
-    with open(args.configs, "r") as f: 
-        bruh = cfg.load_cfg(f) 
-        print(bruh)
-
     # Update the hyperparameters from default to the ones we mentioned in arguments
     cfg.merge_from_file(args.configs)
-
-    assert False
     
     if not os.path.exists(cfg.OUTPUT.MODEL_DIR):
         mkdir(cfg.OUTPUT.MODEL_DIR)
