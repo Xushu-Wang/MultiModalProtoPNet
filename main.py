@@ -32,8 +32,8 @@ def main():
         mkdir(cfg.OUTPUT.IMG_DIR)
 
     # Create Logger Initially
-    # log, logclose = create_logger(log_filename=os.path.join(cfg.OUTPUT.MODEL_DIR, 'train.log'))
-    log, logclose = create_logger(log_filename=os.path.join("stuff", 'train.log'))
+    log, logclose = create_logger(log_filename=os.path.join(cfg.OUTPUT.MODEL_DIR, 'train.log'))
+    # log, logclose = create_logger(log_filename=os.path.join("stuff", 'train.log'))
     log(str(cfg))
     
     # Get the dataset for training

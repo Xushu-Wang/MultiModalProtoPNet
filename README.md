@@ -1,7 +1,9 @@
 # Multi-Modal ProtoPNet
 
-This repo contains a PyTorch implementation for the multimodal version of protopnet
-
+This repo contains a PyTorch implementation for the multimodal version of ProtoPnet. There are three datasets we work with. 
+1. The CUB dataset is simply referred to as cub. 
+2. The genetics portion of the BIOSCAN dataset is referred to as genetics. 
+3. The images portion of the BIOSCAN dataset is referred to as bioscan. 
 
 ## Dependencies
 
@@ -13,38 +15,80 @@ pip install -r requirements.txt
 ```
 
 ## Dataset Directory Structure 
-You want two folders in the base, `datasets` and `bioscan`. Once they are augmented and cropped, you should have a tree structure as
-such. 
+You want to make datasets folder that contains the relevant data for CUB and Bioscan. To do this, replace the symlinks in `datasets/` as follows 
 ``` 
+dataset/
+    bioscan -> /usr/project/xtmp/xw214/bioscan/
+    cub200_cropped -> /usr/project/xtmp/xw214/datasets/cub200_cropped/
+    genetics -> /usr/project/xtmp/mb625/data/BIOSCAN-1M/
+```
+You should be able to do this in the Duke cluster since the folders in `xtmp` give global read-only access to all users. All the datasets are augmented and cropped, so no further preprocessing is needed. The tree structure should look something like this. 
+```
+(base) ~/MultiModalPPNet/datasets/bioscan>tree -L 1
 .
-└── cub200_cropped
-    ├── test_cropped
-        ├── 001
-        ├── 002 
-        └── ... 
-    ├── train_cropped
-    └── train_cropped_augmented
-└── bioscan 
-    ├── test
-    ├── test_diptera
-    ├── train
-    ├── train_augmented
-    ├── train_diptera
-    └── train_diptera_augmented
-```
-If you're in the duke cs cluster, you can create a symlink to Andy's dataset. 
-```
-ln -s /usr/xtmp/xw214/datasets datasets 
-ln -s /usr/xtmp/xw214/bioscan bioscan 
+├── test
+├── test_diptera
+├── train
+├── train_augmented
+├── train_diptera
+└── train_diptera_augmented
+
+(base) ~/MultiModalPPNet/datasets/cub200_cropped>tree -L 1 
+.
+├── test_cropped
+├── train_cropped
+└── train_cropped_augmented
+
+(base) ~/MultiModalPPNet/datasets/genetics>tree -L 2
+.
+├── images
+│   └── cropped_256
+├── large_diptera_family-test.tsv
+├── large_diptera_family-train.tsv
+├── large_diptera_family-validation.tsv
+├── large_insect_order-test.tsv
+├── large_insect_order-train.tsv
+├── large_insect_order-validation.tsv
+├── medium_diptera_family-test.tsv
+├── medium_diptera_family-train.tsv
+├── medium_diptera_family-validation.tsv
+├── metadata_cleaned_columns.txt
+├── metadata_cleaned_permissive.tsv
+├── metadata_cleaned_restrictive.tsv
+├── small_diptera_family-test.tsv
+├── small_diptera_family-train.tsv
+└── small_diptera_family-validation.tsv
 ```
 
-## Downloading the CNN pretrained backbone layer for genetics dataset 
-Call `gdown` in the `saved_models` directory. 
+## Pretrained Backbone Layers 
+We provide pretrained backbone layers (resnet, vgg, and lightweight CNNs) as the feature extractors for ProtoPnet. 
+1. To retrieve the pretrained backbone network for the genetics dataset. Download from Charlie's google drive link with `gdown`. 
 ```
 gdown 1qTRhdvujg4FyNNa3s0W-w-XOLkgLcNTW
 ```
+2. For the cub dataset, we use a standard resnet 50. 
+3. For the bioscan dataset, we use a standard resnet 50 and vgg 19, but we will train a feature extractor with a custom CNN. 
+Make sure to move all the `.pth` files into the `pretrained_backbones/` directory. 
 
-## Running the Experiment
+## Running 
+To train the models, run the script, where the argument is the `yaml` configuration file. 
+``` 
+#!/usr/bin/env bash
+
+#SBATCH --job-name=protopnet_bioscan      # Job name
+#SBATCH --ntasks=1                    # Run on a single Node
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=160gb                  # Job memory request
+#SBATCH --time=15:00:00                # Time limit hrs:min:sec
+#SBATCH --partition=compsci-gpu
+#SBATCH --gres=gpu:4
+
+eval "$(conda shell.bash hook)" 
+conda activate protopnet
+python3 main.py --configs="configs/bioscan.yaml"
+```
+
+## Running the Experiment (Deprecated)
 
 1. For images, augment the original dataset using augmentation/img_aug.py. The default target directory is root_dir + `train_cropped_augmented/`. (Not completely implemented yet). 
 
