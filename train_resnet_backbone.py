@@ -36,6 +36,8 @@ def main():
     train_loader, train_push_loader, test_loader = get_dataset(cfg, log)
 
     model = resnet50(pretrained=True)
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, len(cfg.DATASET.NUM_CLASSES))
     
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -58,19 +60,19 @@ def main():
         epoch_loss = running_loss / len(train_loader.dataset)
         print(f"Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss}")
 
-    # Evaluate the model
-    model.eval()
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for inputs, labels in test_loader:
-            outputs = model(inputs)
-            _, predicted = torch.max(outputs, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+        # Evaluate the model
+        model.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for inputs, labels in test_loader:
+                outputs = model(inputs)
+                _, predicted = torch.max(outputs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
 
-    accuracy = correct / total
-    print(f"Accuracy on test set: {100 * accuracy:.2f}%")
+        accuracy = correct / total
+        print(f"Accuracy on test set: {100 * accuracy:.2f}%")
 
     # Save the model
     torch.save(model.state_dict(), 'resnet50_backbone.pth')
