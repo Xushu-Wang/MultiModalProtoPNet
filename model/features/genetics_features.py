@@ -39,20 +39,20 @@ class GeneticCNN2D(nn.Module):
             # return F.log_softmax(x, dim=1)
         return x
     
-    
-    def __repr__(self):
-        rep = {
-            'GENETICS(\n'
-            '\tlength: {},\n'
-            '\tclass_count: {},\n'
-            '\tinclude_connected_layer: {},\n'
-            '\tremove_last_layer: {},\n'
-            ')'
-        }
-        
-        return rep.format(
-            self.length,
-            self.class_count,
-            self.include_connected_layer, 
-            self.remove_last_layer
-        )
+    #
+    # def __repr__(self):
+    #     rep = {
+    #         'GENETICS(\n'
+    #         '\tlength: {},\n'
+    #         '\tclass_count: {},\n'
+    #         '\tinclude_connected_layer: {},\n'
+    #         '\tremove_last_layer: {},\n'
+    #         ')'
+    #     }
+    #    
+    #     return rep.format(
+    #         self.length,
+    #         self.class_count,
+    #         self.include_connected_layer, 
+    #         self.remove_last_layer
+    #     )
