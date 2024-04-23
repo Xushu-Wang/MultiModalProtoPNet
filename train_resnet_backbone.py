@@ -49,6 +49,7 @@ def main():
     model.to(device)
     
     optimizer = optim.Adam(model.parameters(), lr=0.001)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor = 0.1, patience=1, threshold=1e-5)
     
     criterion = nn.CrossEntropyLoss().to(device)
 
@@ -64,17 +65,25 @@ def main():
             inputs, labels = inputs.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
+            
             loss = criterion(outputs, labels)
             loss.backward()
+            
             optimizer.step()
             running_loss += loss.item() * inputs.size(0)
+            
         epoch_loss = running_loss / len(train_loader.dataset)
-        log(f"Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss}")
+        
+        scheduler.step(epoch_loss)
+        
+        log(f"Training Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss}")
 
         # Evaluate the model
         model.eval()
         correct = 0
         total = 0
+        
+        testing_loss = 0.0
         with torch.no_grad():
             for inputs, labels in test_loader:
                 inputs, labels = inputs.to(device), labels.to(device)
@@ -82,8 +91,14 @@ def main():
                 _, predicted = torch.max(outputs, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
+                
+                loss = criterion(outputs, labels)
+                testing_loss += loss.item() * inputs.size(0)
 
         accuracy = correct / total
+        epoch_loss = running_loss / len(train_loader.dataset)
+        
+        log(f"Testing Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss}")
         log(f"Accuracy on test set: {100 * accuracy:.2f}%")
 
     # Save the model
