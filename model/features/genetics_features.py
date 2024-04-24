@@ -39,17 +39,31 @@ class GeneticCNN2D(nn.Module):
             # return F.log_softmax(x, dim=1)
         return x
     
+    def conv_info(self):
+        layer_filter_sizes = []
+        layer_strides = []
+        layer_paddings = []
+
+        for layer in [self.conv1, self.pool3, self.conv2, self.pool3, self.conv3, self.pool]:
+            layer_filter_sizes.append(layer.kernel_size[1])
+            layer_strides.append(layer.stride[1] if isinstance(layer.stride, tuple) else layer.stride)
+            layer_paddings.append(layer.padding[1] if isinstance(layer.padding, tuple) else layer.padding)
     
+        # NOTE - Layer_paddings is different from the padding in the image models
+
+        return layer_filter_sizes, layer_strides, layer_paddings
+
     def __repr__(self):
-        rep = {
-            'GENETICS(\n'
-            '\tlength: {},\n'
-            '\tclass_count: {},\n'
-            '\tinclude_connected_layer: {},\n'
-            '\tremove_last_layer: {},\n'
-            ')'
-        }
-        
+        # rep = {
+        #     'GENETICS(\n'
+        #     '\tlength: {},\n'
+        #     '\tclass_count: {},\n'
+        #     '\tinclude_connected_layer: {},\n'
+        #     '\tremove_last_layer: {},\n'
+        #     ')'
+        # }
+        rep = 'GENETICS(\n\tlength: {},\n\tclass_count: {},\n\tinclude_connected_layer: {},\n\tremove_last_layer: {},\n)'
+
         return rep.format(
             self.length,
             self.class_count,

@@ -9,4 +9,4 @@ saved_models/
 .DS_STORE
 slurm*.out
 pretrained_backbones/
-
+datasets/*

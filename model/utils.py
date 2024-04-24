@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 
@@ -79,3 +80,13 @@ def get_optimizers(cfg, ppnet):
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
     return joint_optimizer, joint_lr_scheduler, warm_optimizer, last_layer_optimizer
+
+nucleotides = {"N": 0, "A": 1, "C": 2, "G": 3, "T": 4}
+def decode_onehot(onehot, three_dim=True):
+    if three_dim:
+        onehot = onehot[:, 0, :]
+    # Add another row encoding whether the nucleotide is unknown
+    onehot = np.vstack([np.zeros(onehot.shape[1]), onehot])
+    # Make the unknown nucleotide 1 if all other nucleotides are 0
+    onehot[0] = 1 - onehot[1:].sum(0)
+    return "".join([list(nucleotides.keys())[list(nucleotides.values()).index(i)] for i in onehot.argmax(0)])

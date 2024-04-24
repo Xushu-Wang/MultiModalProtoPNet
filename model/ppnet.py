@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+# TODO - Add pruning
 class PPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,

@@ -101,6 +101,7 @@ def main():
                                         target_accu=0.70, log=log)
 
         # Pushing Epochs
+            print(os.path.join(cfg.OUTPUT.IMG_DIR, str(epoch) + '_' + 'push_weights.pth'))
             if epoch >= cfg.OPTIM.PUSH_START and epoch in cfg.OPTIM.PUSH_EPOCHS:
                 push.push_prototypes(
                     train_push_loader, # pytorch dataloader (must be unnormalized in [0,1])
@@ -126,13 +127,20 @@ def main():
                 # Optimize last layer
                 tnt.last_only(model=ppnet_multi, log=log)
                 for i in range(20):
+                # for i in range(1):
                     log('iteration: \t{0}'.format(i))
                     _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
                                 class_specific=class_specific, coefs=coefs, log=log)
                     accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
                                     class_specific=class_specific, log=log)
-                    save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu, target_accu=0.70, log=log)
-        
+                    save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + 'push', accu=accu, target_accu=0.70, log=log)
+
+                # Print the weights of the last layer
+                # Save the weigts of the last layer
+                torch.save(ppnet.last_layer.state_dict(), os.path.join(cfg.OUTPUT.IMG_DIR, str(epoch) + '_push_weights.pth'))
+
+
+
         logclose()
         
 

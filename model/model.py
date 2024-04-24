@@ -66,10 +66,21 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
     
     m.load_state_dict(weights)
 
+    # NOTE - Layer_paddings is different from the padding in the image models
+    layer_filter_sizes, layer_strides, layer_paddings = m.conv_info()
+
+    proto_layer_rf_info = compute_proto_layer_rf_info_v2(img_size=length,
+                                                         layer_filter_sizes=layer_filter_sizes,
+                                                         layer_strides=layer_strides,
+                                                         layer_paddings=layer_paddings,
+                                                         prototype_kernel_size=prototype_shape[2])
+
+    print(proto_layer_rf_info)
+
     return PPNet(features=m, 
                  img_size=(4, 1, length), 
                  prototype_shape=prototype_shape,
-                 proto_layer_rf_info=None, 
+                 proto_layer_rf_info=proto_layer_rf_info, 
                  num_classes=num_classes,
                  init_weights=True, 
                  prototype_distance_function=prototype_distance_function,
