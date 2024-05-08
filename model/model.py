@@ -75,8 +75,6 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
                                                          layer_paddings=layer_paddings,
                                                          prototype_kernel_size=prototype_shape[2])
 
-    print(proto_layer_rf_info)
-
     return PPNet(features=m, 
                  img_size=(4, 1, length), 
                  prototype_shape=prototype_shape,
@@ -142,7 +140,7 @@ def construct_ppnet(cfg):
         ).to(cfg.MODEL.DEVICE)
     elif cfg.DATASET.NAME == "genetics":
         if not cfg.MODEL.BACKBONE:
-            raise ValueError("Model path not provided for genetics dataset (--backbone)")
+            raise ValueError("Model path not provided for genetics dataset")
         return construct_genetic_ppnet(
             length=cfg.DATASET.GENETIC.SIZE, 
             num_classes=cfg.DATASET.NUM_CLASSES, 

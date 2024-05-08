@@ -37,13 +37,12 @@ def main():
     log(str(cfg))
     
     # Get the dataset for training
-    train_loader, train_push_loader, test_loader = get_dataset(cfg, log)
+    train_loader, train_push_loader, val_loader = get_dataset(cfg, log)
 
     # Construct and parallel the model
     ppnet = construct_ppnet(cfg)
     ppnet_multi = torch.nn.DataParallel(ppnet) 
     class_specific = True
-    
     
     if cfg.DATASET.NAME == 'multimodal':
         ppnet_multi.load_state_dict_img(cfg.DATASET.IMG.MODEL_PATH)
@@ -64,7 +63,6 @@ def main():
     
     
     if cfg.DATASET.NAME == 'multimodal':
-        
         for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
             log('epoch: \t{0}'.format(epoch))
             
@@ -73,10 +71,9 @@ def main():
             _ = train_multimodal(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer, 
                             class_specific=class_specific, coefs=coefs, log=log)
             
-            accu = test_multimodal(model=ppnet_multi, dataloader=test_loader,
+            accu = test_multimodal(model=ppnet_multi, dataloader=val_loader,
                             class_specific=class_specific, log=log)
-            
-            
+             
         logclose()
         
     else:
@@ -95,7 +92,7 @@ def main():
                             class_specific=class_specific, coefs=coefs, log=log)
 
             # Testing Epochs
-            accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+            accu = tnt.test(model=ppnet_multi, dataloader=val_loader,
                             class_specific=class_specific, log=log)
             save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'nopush', accu=accu,
                                         target_accu=0.70, log=log)
@@ -119,7 +116,7 @@ def main():
                     no_save=cfg.OUTPUT.NO_SAVE,
                     fix_prototypes=cfg.DATASET.GENETIC.FIX_PROTOTYPES)
                 
-                accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+                accu = tnt.test(model=ppnet_multi, dataloader=val_loader,
                                 class_specific=class_specific, log=log)
                 save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'push', accu=accu,
                                             target_accu=0.70, log=log)
@@ -131,7 +128,7 @@ def main():
                     log('iteration: \t{0}'.format(i))
                     _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
                                 class_specific=class_specific, coefs=coefs, log=log)
-                    accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+                    accu = tnt.test(model=ppnet_multi, dataloader=val_loader,
                                     class_specific=class_specific, log=log)
                     save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + '_' + 'push', accu=accu, target_accu=0.70, log=log)
 
