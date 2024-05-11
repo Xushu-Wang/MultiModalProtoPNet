@@ -8,7 +8,9 @@ model_urls = {
     'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
     'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+    'resnetbioscan': '/home/users/xw214/MultiModalProtoPNet/pretrained_backbones/resnet50_backbone_final.pth'
 }
+
 
 model_dir = './pretrained_backbones'
 
@@ -294,6 +296,25 @@ def resnet152_features(pretrained=False, **kwargs):
     return model
 
 
+def resnet_bioscan_features(pretrained=True, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on BIO1MSCAN dataset
+    """
+    model = ResNet_features(Bottleneck, [3, 4, 6, 3], **kwargs)
+
+    if pretrained:
+        my_dict = torch.load(model_urls['resnetbioscan'], map_location=torch.device('cpu'))
+                
+        my_dict.pop('fc.weight')
+        my_dict.pop('fc.bias')
+        model.load_state_dict(my_dict, strict=False)
+        
+        return model
+    else:
+        raise NotImplementedError
+
+
 if __name__ == '__main__':
 
     r18_features = resnet18_features(pretrained=True)
@@ -310,3 +331,6 @@ if __name__ == '__main__':
 
     r152_features = resnet152_features(pretrained=True)
     print(r152_features)
+    
+    rbioscan_features = resnet_bioscan_features(pretrained=True)
+    print(rbioscan_features)

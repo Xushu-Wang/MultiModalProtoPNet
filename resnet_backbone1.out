@@ -1,0 +1,195 @@
+/home/users/xw214/miniconda3/envs/protopnet/lib/python3.8/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/home/users/xw214/miniconda3/envs/protopnet/lib/python3.8/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Downloading: "https://download.pytorch.org/models/resnet50-0676ba61.pth" to /home/users/xw214/.cache/torch/hub/checkpoints/resnet50-0676ba61.pth
+DATASET:
+  GENETIC:
+    FIX_PROTOTYPES: True
+    MODEL_PATH: NA
+    ORDER_NAME: NA
+    PROTOTYPE_SHAPE: (0, 0, 0, 0)
+    SIZE: 0
+    TAXONOMY_NAME: NA
+    TRAIN_PATH: NA
+    TRAIN_PUSH_DIR: NA
+    TRANSFORM: onehot
+    VALIDATION_PATH: NA
+  IMAGE:
+    MODEL_PATH: NA
+    PROTOTYPE_SHAPE: (0, 0, 0, 0)
+    SIZE: 256
+    TEST_DIR: datasets/bioscan/small_diptera_test
+    TRAIN_BATCH_SIZE: 80
+    TRAIN_DIR: datasets/bioscan/small_diptera_train
+    TRAIN_PUSH_DIR: datasets/bioscan/small_diptera_train
+    TRANSFORM_MEAN: (0.485, 0.456, 0.406)
+    TRANSFORM_STD: (0.229, 0.224, 0.225)
+  NAME: bioscan
+  NUM_CLASSES: 40
+  TEST_BATCH_SIZE: 100
+  TRAIN_BATCH_SIZE: 80
+  TRAIN_PUSH_BATCH_SIZE: 75
+EXPERIMENT_RUN: 1
+MODEL:
+  ADD_ON_LAYERS_TYPE: regular
+  BACKBONE: resnet50
+  DEVICE: cuda
+  GENETIC_MODE: False
+  PROTOTYPE_ACTIVATION_FUNCTION: linear
+  PROTOTYPE_DISTANCE_FUNCTION: cosine
+  PROTOTYPE_SHAPE: (400, 128, 1, 1)
+OPTIM:
+  COEFS:
+    CLST: 0.8
+    CRS_ENT: 1
+    L1: 0.0001
+    SEP: -0.08
+  JOINT_OPTIMIZER_LAYERS:
+    ADD_ON_LAYERS: 0.003
+    FEATURES: 0.0001
+    LR_STEP_SIZE: 5
+    PROTOTYPE_VECTORS: 0.003
+    WEIGHT_DECAY: 0.001
+  LAST_LAYER_OPTIMIZER_LAYERS:
+    LR: 0.0001
+  NUM_TRAIN_EPOCHS: 100
+  NUM_WARM_EPOCHS: 5
+  PUSH_EPOCHS: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+  PUSH_START: 10
+  WARM_OPTIMIZER_LAYERS:
+    ADD_ON_LAYERS: 0.003
+    PROTOTYPE_VECTORS: 0.003
+    WEIGHT_DECAY: 0.001
+OUTPUT:
+  IMG_DIR: ./saved_models/bioscan/img
+  MODEL_DIR: ./saved_models
+  NO_SAVE: False
+  PREPROCESS_INPUT_FUNCTION: None
+  PROTOTYPE_IMG_FILENAME_PREFIX: prototype-img
+  PROTOTYPE_SELF_ACT_FILENAME_PREFIX: prototype-self-act
+  PROTO_BOUND_BOXES_FILENAME_PREFIX: bb
+  WEIGHT_MATRIX_FILENAME: outputL_weights
+Loading model...
+  0%|          | 0.00/97.8M [00:00<?, ?B/s]  3%|▎         | 2.52M/97.8M [00:00<00:03, 26.4MB/s] 17%|█▋        | 16.5M/97.8M [00:00<00:00, 97.0MB/s] 36%|███▌      | 35.4M/97.8M [00:00<00:00, 143MB/s]  56%|█████▌    | 54.7M/97.8M [00:00<00:00, 166MB/s] 75%|███████▍  | 73.2M/97.8M [00:00<00:00, 176MB/s] 94%|█████████▍| 92.3M/97.8M [00:00<00:00, 185MB/s]100%|██████████| 97.8M/97.8M [00:00<00:00, 163MB/s]Training
+
+Training Epoch 1/40, Loss: 1.4880858204705374
+Testing Epoch 1/40, Loss: 1.4880858204705374
+Accuracy on test set: 58.39%
+Training Epoch 2/40, Loss: 0.8853648287909371
+Testing Epoch 2/40, Loss: 0.8853648287909371
+Accuracy on test set: 73.22%
+Training Epoch 3/40, Loss: 0.6858563913617816
+Testing Epoch 3/40, Loss: 0.6858563913617816
+Accuracy on test set: 71.10%
+Training Epoch 4/40, Loss: 0.5516928164277758
+Testing Epoch 4/40, Loss: 0.5516928164277758
+Accuracy on test set: 70.64%
+Training Epoch 5/40, Loss: 0.4505710164478847
+Testing Epoch 5/40, Loss: 0.4505710164478847
+Accuracy on test set: 75.45%
+Training Epoch 6/40, Loss: 0.3724995142902647
+Testing Epoch 6/40, Loss: 0.3724995142902647
+Accuracy on test set: 75.90%
+Training Epoch 7/40, Loss: 0.29855681933675493
+Testing Epoch 7/40, Loss: 0.29855681933675493
+Accuracy on test set: 81.03%
+Training Epoch 8/40, Loss: 0.2518585775750024
+Testing Epoch 8/40, Loss: 0.2518585775750024
+Accuracy on test set: 78.59%
+Training Epoch 9/40, Loss: 0.2149288056067058
+Testing Epoch 9/40, Loss: 0.2149288056067058
+Accuracy on test set: 78.40%
+Training Epoch 10/40, Loss: 0.18709519058465957
+Testing Epoch 10/40, Loss: 0.18709519058465957
+Accuracy on test set: 78.72%
+Training Epoch 11/40, Loss: 0.15475313856772013
+Testing Epoch 11/40, Loss: 0.15475313856772013
+Accuracy on test set: 78.84%
+Training Epoch 12/40, Loss: 0.14153804827162197
+Testing Epoch 12/40, Loss: 0.14153804827162197
+Accuracy on test set: 77.76%
+Training Epoch 13/40, Loss: 0.1205043179584401
+Testing Epoch 13/40, Loss: 0.1205043179584401
+Accuracy on test set: 78.02%
+Training Epoch 14/40, Loss: 0.1125910804101399
+Testing Epoch 14/40, Loss: 0.1125910804101399
+Accuracy on test set: 77.09%
+Training Epoch 15/40, Loss: 0.1064174806113754
+Testing Epoch 15/40, Loss: 0.1064174806113754
+Accuracy on test set: 77.61%
+Training Epoch 16/40, Loss: 0.10843248691729136
+Testing Epoch 16/40, Loss: 0.10843248691729136
+Accuracy on test set: 79.33%
+Training Epoch 17/40, Loss: 0.08344605379870959
+Testing Epoch 17/40, Loss: 0.08344605379870959
+Accuracy on test set: 80.23%
+Training Epoch 18/40, Loss: 0.0772799759145294
+Testing Epoch 18/40, Loss: 0.0772799759145294
+Accuracy on test set: 80.12%
+Training Epoch 19/40, Loss: 0.09082581164262124
+Testing Epoch 19/40, Loss: 0.09082581164262124
+Accuracy on test set: 78.50%
+Training Epoch 20/40, Loss: 0.06454620725342206
+Testing Epoch 20/40, Loss: 0.06454620725342206
+Accuracy on test set: 76.88%
+Training Epoch 21/40, Loss: 0.06739610472268293
+Testing Epoch 21/40, Loss: 0.06739610472268293
+Accuracy on test set: 80.53%
+Training Epoch 22/40, Loss: 0.07756218027855669
+Testing Epoch 22/40, Loss: 0.07756218027855669
+Accuracy on test set: 82.47%
+Training Epoch 23/40, Loss: 0.014866865023105804
+Testing Epoch 23/40, Loss: 0.014866865023105804
+Accuracy on test set: 87.05%
+Training Epoch 24/40, Loss: 0.0055157284599595836
+Testing Epoch 24/40, Loss: 0.0055157284599595836
+Accuracy on test set: 87.19%
+Training Epoch 25/40, Loss: 0.003864886895786705
+Testing Epoch 25/40, Loss: 0.003864886895786705
+Accuracy on test set: 87.29%
+Training Epoch 26/40, Loss: 0.0028412576911172696
+Testing Epoch 26/40, Loss: 0.0028412576911172696
+Accuracy on test set: 87.43%
+Training Epoch 27/40, Loss: 0.0024547440978764956
+Testing Epoch 27/40, Loss: 0.0024547440978764956
+Accuracy on test set: 87.63%
+Training Epoch 28/40, Loss: 0.001953250119362825
+Testing Epoch 28/40, Loss: 0.001953250119362825
+Accuracy on test set: 87.67%
+Training Epoch 29/40, Loss: 0.001500461887119205
+Testing Epoch 29/40, Loss: 0.001500461887119205
+Accuracy on test set: 87.77%
+Training Epoch 30/40, Loss: 0.0011860530179027202
+Testing Epoch 30/40, Loss: 0.0011860530179027202
+Accuracy on test set: 87.83%
+Training Epoch 31/40, Loss: 0.0009239664526706162
+Testing Epoch 31/40, Loss: 0.0009239664526706162
+Accuracy on test set: 87.73%
+Training Epoch 32/40, Loss: 0.0006817775297178222
+Testing Epoch 32/40, Loss: 0.0006817775297178222
+Accuracy on test set: 87.89%
+Training Epoch 33/40, Loss: 0.0005487912858537
+Testing Epoch 33/40, Loss: 0.0005487912858537
+Accuracy on test set: 87.79%
+Training Epoch 34/40, Loss: 0.0005042537143079763
+Testing Epoch 34/40, Loss: 0.0005042537143079763
+Accuracy on test set: 87.83%
+Training Epoch 35/40, Loss: 0.0003642268777558846
+Testing Epoch 35/40, Loss: 0.0003642268777558846
+Accuracy on test set: 87.74%
+Training Epoch 36/40, Loss: 0.00027587674031799125
+Testing Epoch 36/40, Loss: 0.00027587674031799125
+Accuracy on test set: 87.72%
+Training Epoch 37/40, Loss: 0.0002213361132931563
+Testing Epoch 37/40, Loss: 0.0002213361132931563
+Accuracy on test set: 87.73%
+Training Epoch 38/40, Loss: 0.00036563216622952105
+Testing Epoch 38/40, Loss: 0.00036563216622952105
+Accuracy on test set: 87.70%
+Training Epoch 39/40, Loss: 0.0008764250521074116
+Testing Epoch 39/40, Loss: 0.0008764250521074116
+Accuracy on test set: 87.29%
+Training Epoch 40/40, Loss: 0.0004995332545326424
+Testing Epoch 40/40, Loss: 0.0004995332545326424
+Accuracy on test set: 87.54%

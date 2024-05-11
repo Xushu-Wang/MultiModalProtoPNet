@@ -174,6 +174,8 @@ def update_prototypes_on_batch(search_batch_input,
     proto_w = prototype_shape[3]
     max_dist = prototype_shape[1] * prototype_shape[2] * prototype_shape[3]
 
+    patch_df_list = None
+    
     if fix_prototypes: # Right now this is just a proxy for the genetics model. This is bad. TODO - Fix this
         patch_df_list = []
 
@@ -346,7 +348,7 @@ def update_prototypes_on_batch(search_batch_input,
                                 vmax=1.0)
         
     # If we're saving genetic patches. Save 'em here.
-    if patch_df_list is not None:
+    if not patch_df_list:
         patch_df = pd.DataFrame(patch_df_list, columns=["key", "class_index", "prototype_index", "patch"])
         if os.path.isfile(os.path.join(dir_for_saving_prototypes, prototype_img_filename_prefix + ".csv")):
             # Update old file

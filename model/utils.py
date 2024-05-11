@@ -65,9 +65,10 @@ def get_optimizers(cfg, ppnet):
             'lr': cfg.OPTIM.WARM_OPTIMIZER_LAYERS.ADD_ON_LAYERS,
             'weight_decay': cfg.OPTIM.WARM_OPTIMIZER_LAYERS.WEIGHT_DECAY
         },
-        {'params': ppnet.prototype_vectors, 
-         'lr': cfg.OPTIM.WARM_OPTIMIZER_LAYERS.PROTOTYPE_VECTORS,
-         },
+        {
+            'params': ppnet.prototype_vectors, 
+            'lr': cfg.OPTIM.WARM_OPTIMIZER_LAYERS.PROTOTYPE_VECTORS,
+        },
     ]
     warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
 
