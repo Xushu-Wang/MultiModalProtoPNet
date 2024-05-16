@@ -1,8 +1,9 @@
 import argparse, os
 import torch
+from dataio.genetics import GeneticDataset
 from utils.util import save_model_w_condition, create_logger
+from torch.utils.data import DataLoader
 
-from  configs.cfg import get_cfg_defaults, update_cfg
 from dataio.dataset import get_dataset
 from augmentation.img_preprocess import preprocess_cub_input_function
 
@@ -16,28 +17,57 @@ import prototype.push as push
 
     
 def main():
-    cfg = get_cfg_defaults()
-
     parser = argparse.ArgumentParser()
+    parser.add_argument('train', type=str, help="Path to training data")
+    parser.add_argument('validate', type=str, help="Path to validation data")
     parser.add_argument('--name', type=str, default='cnn_backbone') 
     parser.add_argument('--gpuid', type=str, default='0') 
-    parser.add_argument('--dataset', type=str, default='')
-    parser.add_argument('--backbone', type=str, default='')
+    parser.add_argument('--output', type=str, default='backbone_temp')
+    parser.add_argument('--taxonomy', type=str, default='family')
 
     args = parser.parse_args()
     args.dataset= "genetics"
 
-    update_cfg(cfg, args) 
+    if not os.path.exists(os.path.join(args.output, args.name)):
+        os.mkdir(os.path.join(args.output, args.name))
 
     # Create Logger Initially
-    log, logclose = create_logger(log_filename=os.path.join(cfg.OUTPUT.MODEL_DIR, 'train.log'), display=True)
+    log, logclose = create_logger(log_filename=os.path.join(args.output, args.name, 'train.log'), display=True)
 
-    log(str(cfg))
-    
     # Get the dataset for training
-    train_loader, train_push_loader, validation_loader = get_dataset(cfg, log)
+    train_dataset = GeneticDataset(args.train,
+                            "onehot", 
+                            args.taxonomy)
+    
+    TRAIN_BATCH_SIZE = 64
+    VAL_BATCH_SIZE = 32
 
-    classes, sizes = train_loader.dataset.get_classes(cfg.DATASET.BIOSCAN.TAXONOMY_NAME)
+    train_loader = DataLoader(
+        train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True,
+        num_workers=4, pin_memory=False)
+    
+    classes, sizes = train_dataset.get_classes(args.taxonomy)
+    
+    validation_dataset = GeneticDataset(args.validate, 
+                            "onehot",
+                            args.taxonomy,
+                            classes)
+    
+    validation_loader = DataLoader(
+        validation_dataset, batch_size=VAL_BATCH_SIZE, shuffle=False,
+        num_workers=4, pin_memory=False)
+
+    log(f"Training Samples:\t{len(train_dataset)}")
+    log(f"Validation Samples:\t{len(validation_dataset)}")
+    log(f"Training Classes:\t{len(classes)}")
+    validation_classes, validation_sizes = validation_dataset.get_classes(args.taxonomy)
+    log(f"Validation Classes:\t{len(validation_classes)}")
+    log(f"Class Sizes:")
+    for c, s in zip(classes, sizes):
+        if c in validation_classes:
+            log(f"\t{c + ':':<20}\t{s}\t{validation_sizes[validation_classes.index(c)]}")
+        else:
+            log(f"\t{c + ':':<20}\t{s}\t0")
 
     model = GeneticCNN2D(720, len(classes), include_connected_layer=True).cuda() 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -46,7 +76,10 @@ def main():
     class_weights = class_weights / class_weights.sum()
     criterion = torch.nn.CrossEntropyLoss(weight=class_weights).to(device)
 
-    for epoch in range(7):
+    max_balanced_accuracy = 0
+    max_balanced_accuracy_epoch = 0
+
+    for epoch in range(8):
         running_loss = 0.0
         correct_guesses = 0
         total_guesses = 0
@@ -93,13 +126,19 @@ def main():
                     total_guesses[i] += torch.sum(labels == i)
         
         accuracy = [correct_guesses[i] / max(1, total_guesses[i]) for i in range(len(classes))]
-        balanced_accuracy = sum(accuracy) / len(classes)
+        balanced_accuracy = sum(accuracy) / len(validation_classes)
         log(f"Epoch {epoch + 1} balanced accuracy: {balanced_accuracy}")
 
+        if balanced_accuracy > max_balanced_accuracy:
+            max_balanced_accuracy = balanced_accuracy
+            max_balanced_accuracy_epoch = epoch
+            torch.save(model.state_dict(), os.path.join(args.output, args.name, f"{args.name}_best.pth"))
+
         # Save the model
-        if epoch >= 2:
-            torch.save(model.state_dict(), os.path.join(cfg.OUTPUT.MODEL_DIR, f"{args.name}_{epoch}.pth"))
+        if epoch >= 2 and balanced_accuracy > max_balanced_accuracy:
+            torch.save(model.state_dict(), os.path.join(args.output, args.name, f"{args.name}_{epoch}.pth"))
         
+    print(f"Best Balanced Accuracy: {max_balanced_accuracy:.4f} at epoch {max_balanced_accuracy_epoch+1}")
 
 if __name__ == '__main__':
     main()

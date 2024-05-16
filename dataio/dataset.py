@@ -68,10 +68,24 @@ def get_dataset(cfg, log):
     elif cfg.DATASET.NAME == 'genetics':
         train_dataset = GeneticDataset(cfg.DATASET.GENETIC.TRAIN_PATH,
                               cfg.DATASET.GENETIC.TRANSFORM, 
-                              cfg.DATASET.GENETIC.TAXONOMY_NAME)
+                              cfg.DATASET.GENETIC.TAXONOMY_NAME,
+                              restraint=cfg.DATASET.GENETIC.RESTRAINT,
+                              max_class_count=cfg.DATASET.NUM_CLASSES
+                        )
         
         train_loader = DataLoader(
             train_dataset, batch_size=cfg.DATASET.TRAIN_BATCH_SIZE, shuffle=True,
+            num_workers=4, pin_memory=False)
+        
+        train_push_dataset = GeneticDataset(cfg.DATASET.GENETIC.TRAIN_PUSH_DIR,
+                                cfg.DATASET.GENETIC.TRANSFORM, 
+                                cfg.DATASET.GENETIC.TAXONOMY_NAME,
+                                restraint=cfg.DATASET.GENETIC.RESTRAINT,
+                                max_class_count=cfg.DATASET.NUM_CLASSES
+                            )
+        
+        train_push_loader = DataLoader(
+            train_push_dataset, batch_size=cfg.DATASET.TRAIN_PUSH_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
         
@@ -85,7 +99,7 @@ def get_dataset(cfg, log):
             validation_dataset, batch_size=cfg.DATASET.TEST_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
         
-        return train_loader, train_loader, validation_loader
+        return train_loader, train_push_loader, validation_loader
     
     
     elif cfg.DATASET.NAME == "cub" or cfg.DATASET.NAME == "bioscan":

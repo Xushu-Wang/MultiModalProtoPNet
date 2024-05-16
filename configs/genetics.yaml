@@ -1,32 +1,78 @@
-EXPERIMENT_RUN: 001
+EXPERIMENT_RUN: 002
 
 MODEL:
     PROTOTYPE_DISTANCE_FUNCTION: "cosine"
     PROTOTYPE_ACTIVATION_FUNCTION: "linear"
-    BACKBONE: "pretrained_backbones/40w-64-deep_6.pth"
+    # BACKBONE: "pretrained_backbones/40w-64-deep_6.pth"
+    # BACKBONE: "saved_models/backbones/order_13.pth"
+    # BACKBONE: "saved_models/backbones/genus_aug/genus_aug_best.pth"
+    BACKBONE: "saved_models/backbones/subfamily/subfamily_best.pth"
 
 DATASET:
     NAME: "genetics"
-    NUM_CLASSES: 40
+    NUM_CLASSES: 7
+    # NUM_CLASSES: 15
     TRAIN_BATCH_SIZE: 80
     TEST_BATCH_SIZE: 100
 
     GENETIC:
         SIZE: 720
-        TAXONOMY_NAME: "family"
+        # TAXONOMY_NAME: "family"
+        TAXONOMY_NAME: "subfamily"
         ORDER_NAME: "Diptera"
         TRANSFORM: "onehot"
-        PROTOTYPE_SHAPE: (1600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
+        PROTOTYPE_SHAPE: (280, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
+        # PROTOTYPE_SHAPE: (600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         FIX_PROTOTYPES: True
-        TRAIN_PATH: "datasets/genetics/small_diptera_family-train.tsv"
-        TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
-        VALIDATION_PATH: "datasets/genetics/small_diptera_family-validation.tsv"
+        TRAIN_PATH: "data/BIOSCAN-1M/large_diptera_family-train-subfamily_augmented.tsv"
+        TRAIN_PUSH_DIR: "data/BIOSCAN-1M/large_diptera_family-train-subfamily_chopped.tsv"
+        VALIDATION_PATH: "data/BIOSCAN-1M/large_diptera_family-validation.tsv"
+        # TRAIN_PATH: "data/BIOSCAN-1M/large_diptera_family-train.tsv"
+        # TRAIN_PUSH_DIR: "data/BIOSCAN-1M/large_diptera_family-train.tsv"
+        # VALIDATION_PATH: "data/BIOSCAN-1M/large_diptera_family-validation.tsv"
 
 OUTPUT:
     NO_SAVE: False
-    MODEL_DIR: "saved_models/genetics/prototype_saving_test"
-    IMG_DIR: "saved_models/genetics/prototype_saving_test_images"
+    MODEL_DIR: "saved_models/genetics/subfamily"
+    IMG_DIR: "saved_models/genetics/subfamily_images"
     PROTOTYPE_IMG_FILENAME_PREFIX: "genetic-string"
 OPTIM:
-    PUSH_START: 0
-    PUSH_EPOCHS: [1, 10, 15, 20, 30, 40, 50, 60, 70, 80]
+    PUSH_START: 5
+    NUM_WARM_EPOCHS: 10
+    PUSH_EPOCHS: [10, 20, 30, 40, 50, 60, 70, 80]
+    # COEFS:
+    # SEP: -.04
+    # CLST: .5
+    # CRS_ENT: 1.5
+# EXPERIMENT_RUN: 003
+
+# MODEL:
+#     PROTOTYPE_DISTANCE_FUNCTION: "cosine"
+#     PROTOTYPE_ACTIVATION_FUNCTION: "linear"
+#     BACKBONE: "pretrained_backbones/40w-64-deep_6.pth"
+
+# DATASET:
+#     NAME: "genetics"
+#     NUM_CLASSES: 40
+#     TRAIN_BATCH_SIZE: 80
+#     TEST_BATCH_SIZE: 100
+
+#     GENETIC:
+#         SIZE: 720
+#         TAXONOMY_NAME: "family"
+#         ORDER_NAME: "Diptera"
+#         TRANSFORM: "onehot"
+#         PROTOTYPE_SHAPE: (1600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
+#         FIX_PROTOTYPES: True
+#         TRAIN_PATH: "datasets/genetics/small_diptera_family-train.tsv"
+#         TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
+#         VALIDATION_PATH: "datasets/genetics/small_diptera_family-validation.tsv"
+
+# OUTPUT:
+#     NO_SAVE: False
+#     MODEL_DIR: "saved_models/genetics/prototype_saving_test"
+#     IMG_DIR: "saved_models/genetics/prototype_saving_test_images/real_run"
+#     PROTOTYPE_IMG_FILENAME_PREFIX: "genetic-string"
+# OPTIM:
+#     PUSH_START: 10
+#     PUSH_EPOCHS: [0, 10, 20, 30, 40, 50, 60, 70, 80]

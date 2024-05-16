@@ -198,7 +198,7 @@ class PPNet(nn.Module):
         arange4 = arange4.unsqueeze(1).unsqueeze(1)
         arange4 = arange4.repeat((1, x.shape[1], x.shape[2], 1))
 
-        arange4 = arange4.repeat((40,1,1,1))
+        arange4 = arange4.repeat((self.num_classes,1,1,1))
         arange4 = arange4.to(x.device)
 
         return arange4

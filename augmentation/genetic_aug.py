@@ -120,11 +120,11 @@ if __name__ == "__main__":
         args.out = args.file
 
     if ".tsv" in args.out:
-        args.out = args.out.replace(".tsv", "_augmented.tsv")
         chopped_out = args.out.replace(".tsv", "_chopped.tsv")
+        args.out = args.out.replace(".tsv", "_augmented.tsv")
     else:
-        args.out = args.out.replace(".csv", "_augmented.csv")
         chopped_out = args.out.replace(".csv", "_chopped.csv")
+        args.out = args.out.replace(".csv", "_augmented.csv")
 
     if args.parent:
         df.to_csv(chopped_out, sep=args.sep, index=False)
@@ -135,9 +135,9 @@ if __name__ == "__main__":
 
     print(f"Input Size: {len(df):,}")
     print(f"Output size: {args.samples * len(df[args.level].unique()):,}")
-    cont = input("Continue? (y/n) ")
+    cont = input("Continue? (Y/n) ")
 
-    if cont.lower() != "y":
+    if cont.lower() == "n":
         exit()
 
     out_df = augment(df, args.level, args.r, args.samples)

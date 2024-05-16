@@ -5,7 +5,7 @@ from utils.util import list_of_distances
 
 
 def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l1_mask=True,
-                   coefs=None, log=print):
+                   coefs=None, log=print, class_weights=None):
     '''
     model: the multi-gpu model
     dataloader:
@@ -37,7 +37,10 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
             output, min_distances = model(input)
 
             # compute loss
-            cross_entropy = torch.nn.functional.cross_entropy(output, target)
+            if class_weights is not None:
+                cross_entropy = torch.nn.functional.cross_entropy(output, target, weight=class_weights)
+            else:
+                cross_entropy = torch.nn.functional.cross_entropy(output, target)
 
             if class_specific:
                 max_dist = (model.module.prototype_shape[1]
@@ -133,26 +136,30 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     with torch.no_grad():
         p_avg_pair_dist = torch.mean(list_of_distances(p, p))
     log('\tp dist pair: \t{0}'.format(p_avg_pair_dist.item()))
-    log('\tbalanced accu:\t{0}'.format(torch.mean(class_correct_counts / class_guess_counts).item()))
-    log(f'\tmode: \t{"train" if is_train else "test"}')
+
+    class_count = torch.sum(class_guess_counts > 0).item()
+
+    log('\tbalanced accu:\t{0}'.format((torch.sum(class_correct_counts / torch.maximum(class_guess_counts, torch.ones(class_guess_counts.shape, device=class_guess_counts.device)))).item()  / class_count))
+
+    log(f'{class_correct_counts / torch.maximum(class_guess_counts, torch.ones(class_guess_counts.shape, device=class_guess_counts.device))}')
 
     return n_correct / n_examples
 
 
-def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=print):
+def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=print, class_weights=None):
     assert(optimizer is not None)
     
     log('\ttrain')
     model.train()
     return _train_or_test(model=model, dataloader=dataloader, optimizer=optimizer,
-                          class_specific=class_specific, coefs=coefs, log=log)
+                          class_specific=class_specific, coefs=coefs, log=log, class_weights=class_weights)
 
 
-def test(model, dataloader, class_specific=False, log=print):
+def test(model, dataloader, class_specific=False, log=print, class_weights=None):
     log('\ttest')
     model.eval()
     return _train_or_test(model=model, dataloader=dataloader, optimizer=None,
-                          class_specific=class_specific, log=log)
+                          class_specific=class_specific, log=log, class_weights=class_weights)
 
 
 def last_only(model, log=print):

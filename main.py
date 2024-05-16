@@ -39,6 +39,8 @@ def main():
     # Get the dataset for training
     train_loader, train_push_loader, val_loader = get_dataset(cfg, log)
 
+    print(train_loader.dataset[0])
+
     # Construct and parallel the model
     ppnet = construct_ppnet(cfg)
     ppnet_multi = torch.nn.DataParallel(ppnet) 
@@ -60,8 +62,7 @@ def main():
         'sep': cfg.OPTIM.COEFS.SEP,
         'l1': cfg.OPTIM.COEFS.L1
     }
-    
-    
+
     if cfg.DATASET.NAME == 'multimodal':
         for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
             log('epoch: \t{0}'.format(epoch))
@@ -124,7 +125,6 @@ def main():
                 # Optimize last layer
                 tnt.last_only(model=ppnet_multi, log=log)
                 for i in range(20):
-                # for i in range(1):
                     log('iteration: \t{0}'.format(i))
                     _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
                                 class_specific=class_specific, coefs=coefs, log=log)
@@ -134,8 +134,7 @@ def main():
 
                 # Print the weights of the last layer
                 # Save the weigts of the last layer
-                torch.save(ppnet.last_layer.state_dict(), os.path.join(cfg.OUTPUT.IMG_DIR, str(epoch) + '_push_weights.pth'))
-
+                torch.save(ppnet, os.path.join(cfg.OUTPUT.IMG_DIR, str(epoch) + '_push_weights.pth'))
 
 
         logclose()

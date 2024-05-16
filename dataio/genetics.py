@@ -179,7 +179,8 @@ class GeneticDataset(Dataset):
             drop_level (str): If supplied, the dataset will drop all rows where the given taxonomy level is not present. Default is None.
             allowed_classes ([(level, [class])]): If supplied, the dataset will only include rows where the given taxonomy level is within the given list of classes. Default is None. Use for validation and test sets.
             one_label (str): If supplied, the label will be the value of one_class
-            classes: list[int]
+            classes: list[str]
+            restraint: ex: ("family", ["Cecidomyiidae"])
             
         Returns:
             (genetics, label): A tuple containing the genetic data and the label (phylum, class, order, family, subfamily, tribe, genus, species, subspecies)
@@ -190,6 +191,7 @@ class GeneticDataset(Dataset):
                  transform='onehot',
                  level: str = None,
                  classes: list[str] = None,
+                 restraint: tuple = None,
                  max_class_count = 40
         ):
         
@@ -217,7 +219,14 @@ class GeneticDataset(Dataset):
                 c: i for i,c in enumerate(classes)
             }
             self.data = self.data[self.data[self.level].isin(classes)]
+
+            if restraint:
+                print("Classes supplied with restraint. Restraints ignored.")
+        
         else:
+            if restraint:
+                self.data = self.data[self.data[restraint[0]].isin(restraint[1])]
+
             classes, sizes = self.get_classes(level)
 
             if len(classes) > max_class_count:
