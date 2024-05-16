@@ -23,12 +23,9 @@ def main():
     # Update the hyperparameters from default to the ones we mentioned in arguments
     cfg.merge_from_file(args.configs)
     
-    args.datasets = 'bioscan'
-
     if not os.path.exists(cfg.OUTPUT.MODEL_DIR):
         os.mkdir(cfg.OUTPUT.MODEL_DIR)
-    if not os.path.exists(cfg.OUTPUT.IMG_DIR):
-        os.mkdir(cfg.OUTPUT.IMG_DIR)
+
 
     # Create Logger Initially
     log, logclose = create_logger(log_filename=os.path.join(cfg.OUTPUT.MODEL_DIR, 'train.log'), display=True)
@@ -38,29 +35,29 @@ def main():
     # Get the dataset for training
     train_loader, train_push_loader, test_loader = get_dataset(cfg, log)
 
-    log("Loading model...")
+    log("Loading model... \n")
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
-    model = resnet50(pretrained=True)
+    model = resnet50(weights='DEFAULT')
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, cfg.DATASET.NUM_CLASSES)
     
     model.to(device)
     
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor = 0.1, patience=1, threshold=1e-5)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor = 0.1, patience=1, threshold=1e-6)
     
     criterion = nn.CrossEntropyLoss().to(device)
 
-    log("Training")
+    log("Training \n")
 
-    num_epochs = 20
+    num_epochs = 60
     
     for epoch in range(num_epochs):
         
         model.train()
-        running_loss = 0.0
+        training_loss = 0.0
         for inputs, labels in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             optimizer.zero_grad()
@@ -70,9 +67,9 @@ def main():
             loss.backward()
             
             optimizer.step()
-            running_loss += loss.item() * inputs.size(0)
+            training_loss += loss.item() * inputs.size(0)
             
-        epoch_loss = running_loss / len(train_loader.dataset)
+        epoch_loss = training_loss / len(train_loader.dataset)
         
         scheduler.step(epoch_loss)
         
@@ -96,13 +93,13 @@ def main():
                 testing_loss += loss.item() * inputs.size(0)
 
         accuracy = correct / total
-        epoch_loss = running_loss / len(train_loader.dataset)
+        epoch_loss = testing_loss / len(test_loader.dataset)
         
         log(f"Testing Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss}")
         log(f"Accuracy on test set: {100 * accuracy:.2f}%")
 
     # Save the model
-    torch.save(model.state_dict(), 'resnet50_backbone.pth')
+    torch.save(model.state_dict(), 'resnet50_backbone_final.pth')
  
 
 if __name__ == '__main__':

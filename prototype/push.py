@@ -174,6 +174,8 @@ def update_prototypes_on_batch(search_batch_input,
     proto_w = prototype_shape[3]
     max_dist = prototype_shape[1] * prototype_shape[2] * prototype_shape[3]
 
+    patch_df_list = None
+    
     if fix_prototypes: # Right now this is just a proxy for the genetics model. This is bad. TODO - Fix this
         patch_df_list = []
 
