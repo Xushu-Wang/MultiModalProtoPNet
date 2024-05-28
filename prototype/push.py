@@ -240,7 +240,7 @@ def update_prototypes_on_batch(search_batch_input,
 
                 # crop out the receptive field
                 # rf_img_j = original_img_j[:, 0, (j % (n_prototypes // num_classes)) * protoL_rf_info[1]: (j % (n_prototypes // num_classes) + 1) * protoL_rf_info[1]]
-                rf_img_j = original_img_j[:, 0, (j % 40) * 18: ((j % 40) + 1) * 18]
+                rf_img_j = original_img_j[:, 0, (j % (n_prototypes // num_classes)) * protoL_rf_info[1]: (j % (n_prototypes // num_classes) + 1) * protoL_rf_info[1]]
 
                 string_prototype = decode_onehot(rf_img_j, False)
                 # patch_df_list.append(
@@ -254,8 +254,8 @@ def update_prototypes_on_batch(search_batch_input,
                 patch_df_list.append(
                     {
                         "key": j,
-                        "class_index": j // (40),
-                        "prototype_index": j % (40),
+                        "class_index": j // (n_prototypes // num_classes),
+                        "prototype_index": j % (n_prototypes // num_classes),
                         "patch": string_prototype
                     }
                 )
