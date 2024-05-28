@@ -116,6 +116,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                                   tuple(prototype_shape))
     prototype_network_parallel.module.prototype_vectors.data.copy_(torch.tensor(prototype_update, dtype=torch.float32).cuda())
     # prototype_network_parallel.cuda()
+
     end = time.time()
     log('\tpush time: \t{0}'.format(end -  start))
 
@@ -229,7 +230,6 @@ def update_prototypes_on_batch(search_batch_input,
                 continue
 
             if fix_prototypes:
-                # TODO - Look inside each prototype to find the best bits
                 assert search_batch_input.shape[2] == 1
                 protoL_rf_info = prototype_network_parallel.module.proto_layer_rf_info
 
@@ -239,15 +239,23 @@ def update_prototypes_on_batch(search_batch_input,
                 original_img_size = original_img_j.shape[0]
 
                 # crop out the receptive field
-                rf_img_j = original_img_j[:, 0, (j % (n_prototypes // num_classes)) * protoL_rf_info[1]: (j % (n_prototypes // num_classes) + 1) * protoL_rf_info[1]]
+                # rf_img_j = original_img_j[:, 0, (j % (n_prototypes // num_classes)) * protoL_rf_info[1]: (j % (n_prototypes // num_classes) + 1) * protoL_rf_info[1]]
+                rf_img_j = original_img_j[:, 0, (j % 40) * 18: ((j % 40) + 1) * 18]
 
                 string_prototype = decode_onehot(rf_img_j, False)
-
+                # patch_df_list.append(
+                #     {
+                #         "key": j,
+                #         "class_index": j // (n_prototypes // num_classes),
+                #         "prototype_index": j % (n_prototypes // num_classes),
+                #         "patch": string_prototype
+                #     }
+                # )
                 patch_df_list.append(
                     {
                         "key": j,
-                        "class_index": j // (n_prototypes // num_classes),
-                        "prototype_index": j % (n_prototypes // num_classes),
+                        "class_index": j // (40),
+                        "prototype_index": j % (40),
                         "patch": string_prototype
                     }
                 )
@@ -349,15 +357,20 @@ def update_prototypes_on_batch(search_batch_input,
                                 vmax=1.0)
         
     # If we're saving genetic patches. Save 'em here.
-    if fix_prototypes and patch_df_list is not None:
+    if fix_prototypes and patch_df_list is not None and len(patch_df_list):
         patch_df = pd.DataFrame(patch_df_list, columns=["key", "class_index", "prototype_index", "patch"])
         if os.path.isfile(os.path.join(dir_for_saving_prototypes, prototype_img_filename_prefix + ".csv")):
             # Update old file
             existing_df = pd.read_csv(os.path.join(dir_for_saving_prototypes, prototype_img_filename_prefix + ".csv"))
             existing_df = existing_df.set_index("key")
             patch_df = patch_df.set_index("key")
-            existing_df.update(patch_df)
+
+            # Combine the two
+            existing_df = existing_df.drop(patch_df.index, errors="ignore")
+            existing_df = pd.concat([existing_df,patch_df])
+
             patch_df = existing_df.reset_index()
+        # TODO - Delete this file on first run
         patch_df.to_csv(os.path.join(dir_for_saving_prototypes, prototype_img_filename_prefix + ".csv"), index=False)
 
     if class_specific:

@@ -24,6 +24,7 @@ def main():
     parser.add_argument('--gpuid', type=str, default='0') 
     parser.add_argument('--output', type=str, default='backbone_temp')
     parser.add_argument('--taxonomy', type=str, default='family')
+    parser.add_argument('--load_path', type=str, default=None)
 
     args = parser.parse_args()
     args.dataset= "genetics"
@@ -69,7 +70,12 @@ def main():
         else:
             log(f"\t{c + ':':<20}\t{s}\t0")
 
-    model = GeneticCNN2D(720, len(classes), include_connected_layer=True).cuda() 
+    model = GeneticCNN2D(720, len(classes), include_connected_layer=True).cuda()
+
+    # Load weights
+    if args.load_path is not None:
+        model.load_state_dict(torch.load(args.load_path))
+
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     class_weights = 1 / torch.tensor(sizes, dtype=torch.float)
@@ -126,6 +132,7 @@ def main():
                     total_guesses[i] += torch.sum(labels == i)
         
         accuracy = [correct_guesses[i] / max(1, total_guesses[i]) for i in range(len(classes))]
+        print(accuracy)
         balanced_accuracy = sum(accuracy) / len(validation_classes)
         log(f"Epoch {epoch + 1} balanced accuracy: {balanced_accuracy}")
 
