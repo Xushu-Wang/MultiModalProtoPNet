@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#SBATCH --job-name=protopnet_genetics_subfamily      # Job name
+#SBATCH --job-name=protopnet_genetics_genus_subfamily      # Job name
 #SBATCH --ntasks=1                    # Run on a single Node
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=80gb                  # Job memory request
@@ -11,4 +11,4 @@
 
 eval "$(conda shell.bash hook)" 
 conda activate intnn
-python3 main.py --configs configs/genetics.yaml
+python3 main.py --configs configs/genetics_genus_subfamily_temp.yaml

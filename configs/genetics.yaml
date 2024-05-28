@@ -6,7 +6,7 @@ MODEL:
     # BACKBONE: "pretrained_backbones/40w-64-deep_6.pth"
     # BACKBONE: "saved_models/backbones/order_13.pth"
     # BACKBONE: "saved_models/backbones/genus_aug/genus_aug_best.pth"
-    BACKBONE: "saved_models/backbones/subfamily/subfamily_best.pth"
+    BACKBONE: "pretrained_backbones/subfamily_16k.pth"
 
 DATASET:
     NAME: "genetics"
@@ -24,9 +24,9 @@ DATASET:
         PROTOTYPE_SHAPE: (280, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         # PROTOTYPE_SHAPE: (600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         FIX_PROTOTYPES: True
-        TRAIN_PATH: "data/BIOSCAN-1M/large_diptera_family-train-subfamily_augmented.tsv"
-        TRAIN_PUSH_DIR: "data/BIOSCAN-1M/large_diptera_family-train-subfamily_chopped.tsv"
-        VALIDATION_PATH: "data/BIOSCAN-1M/large_diptera_family-validation.tsv"
+        TRAIN_PATH: "datasets/genetics/large_diptera_family-train-subfamily_augmented.tsv"
+        TRAIN_PUSH_DIR: "datasets/genetics/large_diptera_family-train-subfamily_chopped.tsv"
+        VALIDATION_PATH: "datasets/genetics/large_diptera_family-validation.tsv"
         # TRAIN_PATH: "data/BIOSCAN-1M/large_diptera_family-train.tsv"
         # TRAIN_PUSH_DIR: "data/BIOSCAN-1M/large_diptera_family-train.tsv"
         # VALIDATION_PATH: "data/BIOSCAN-1M/large_diptera_family-validation.tsv"
@@ -37,8 +37,8 @@ OUTPUT:
     IMG_DIR: "saved_models/genetics/subfamily_images"
     PROTOTYPE_IMG_FILENAME_PREFIX: "genetic-string"
 OPTIM:
-    PUSH_START: 5
-    NUM_WARM_EPOCHS: 10
+    PUSH_START: 10
+    NUM_WARM_EPOCHS: 5
     PUSH_EPOCHS: [10, 20, 30, 40, 50, 60, 70, 80]
     # COEFS:
     # SEP: -.04
