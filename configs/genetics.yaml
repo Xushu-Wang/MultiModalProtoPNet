@@ -6,11 +6,11 @@ MODEL:
     # BACKBONE: "pretrained_backbones/40w-64-deep_6.pth"
     # BACKBONE: "saved_models/backbones/order_13.pth"
     # BACKBONE: "saved_models/backbones/genus_aug/genus_aug_best.pth"
-    BACKBONE: "pretrained_backbones/subfamily_16k.pth"
+    BACKBONE: "saved_models/backbones/species_Metriocnemus/species_Metriocnemus_best.pth"
 
 DATASET:
     NAME: "genetics"
-    NUM_CLASSES: 7
+    NUM_CLASSES: 8
     # NUM_CLASSES: 15
     TRAIN_BATCH_SIZE: 80
     TEST_BATCH_SIZE: 100
@@ -18,28 +18,28 @@ DATASET:
     GENETIC:
         SIZE: 720
         # TAXONOMY_NAME: "family"
-        TAXONOMY_NAME: "subfamily"
+        TAXONOMY_NAME: "species"
         ORDER_NAME: "Diptera"
         TRANSFORM: "onehot"
-        PROTOTYPE_SHAPE: (280, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
+        PROTOTYPE_SHAPE: (320, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         # PROTOTYPE_SHAPE: (600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         FIX_PROTOTYPES: True
-        TRAIN_PATH: "datasets/genetics/large_diptera_family-train-subfamily_augmented.tsv"
-        TRAIN_PUSH_DIR: "datasets/genetics/large_diptera_family-train-subfamily_chopped.tsv"
-        VALIDATION_PATH: "datasets/genetics/large_diptera_family-validation.tsv"
-        # TRAIN_PATH: "data/BIOSCAN-1M/large_diptera_family-train.tsv"
-        # TRAIN_PUSH_DIR: "data/BIOSCAN-1M/large_diptera_family-train.tsv"
-        # VALIDATION_PATH: "data/BIOSCAN-1M/large_diptera_family-validation.tsv"
+        # TRAIN_PATH: "datasets/genetics/small_diptera_family-train-.tsv"
+        # TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
+        # VALIDATION_PATH: "datasets/genetics/small_diptera_family-validation.tsv"
+        TRAIN_PATH: "datasets/genetics/large_diptera_family-train-species-Metriocnemus_augmented.tsv"
+        TRAIN_PUSH_DIR: "data/BIOSCAN-1M/large_diptera_family-train-species-Metriocnemus_chopped.tsv"
+        VALIDATION_PATH: "data/BIOSCAN-1M/large_diptera_family-validation.tsv"
 
 OUTPUT:
     NO_SAVE: False
-    MODEL_DIR: "saved_models/genetics/subfamily"
-    IMG_DIR: "saved_models/genetics/subfamily_images"
+    MODEL_DIR: "saved_models/genetics/metriocnemus"
+    IMG_DIR: "saved_models/genetics/metriocnemus_images"
     PROTOTYPE_IMG_FILENAME_PREFIX: "genetic-string"
 OPTIM:
-    PUSH_START: 10
+    PUSH_START: 0
     NUM_WARM_EPOCHS: 5
-    PUSH_EPOCHS: [10, 20, 30, 40, 50, 60, 70, 80]
+    PUSH_EPOCHS: [0, 5, 10, 20, 30, 40, 50, 60, 70, 80]
     # COEFS:
     # SEP: -.04
     # CLST: .5
