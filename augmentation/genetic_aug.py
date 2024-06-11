@@ -22,16 +22,30 @@ Arguments:
 - out: The path to the output file (defaults to the input file with "_augmented" or "_augmented_balanced" appended)
 - r: Noise rate (defaults to 0.05)
 - sep: The separator used in the input file (defaults to "\t")
-- samples: The number of samples to generate per class (defaults to the size of the maximum class)
-- parent: The value of the parent taxonomy to balance on (defaults to None in which case all samples of the lower level are used)
-- num_classes: The number of classes to generate (defaults to -1 in which case all classes are generated)
+- samples: The number of samples to generate per class (defaults to the size of the maximum class) (ignored if folder mode is true)
+- parent: The value of the parent taxonomy to balance on (defaults to None in which case all samples of the lower level are used) (ignored if folder mode is true)
+- num_classes: The number of classes to generate (defaults to -1 in which case all classes are generated) (ignored if folder mode is true)
+- folder_mode: Will generate a dataset from a tree of augmented images
+- image_folder: Only does anything if folder_mode ios true
 """
 
 import numpy as np
 import pandas as pd
 import argparse
 from threading import Thread
+import os
+import shutil
+import regex as re
+from PIL import Image
 
+def extract_id_with_extension(file):
+    if "_" not in file:
+        # This is a regular old run-of-the-mill path 
+        return file
+    # This is an augmented path
+    pattern = r'(?<=_)(?<id>(BIOUG)?\d+(\-[^\.]\d+)?\.jpg)'
+    return re.search(pattern, file).group('id')
+    
 def augment_sample(sample, r):
     insertion_count = np.random.randint(0, 3)
     deletion_count = np.random.randint(0, 3)
@@ -98,6 +112,43 @@ def process_df(df, level, parent, parent_type, num_classes):
     
     return df
 
+def folder_augment(df, image_folder, r):
+    out_df = pd.DataFrame(columns=[*df.columns])
+    df = df.set_index("image_file")
+    rows = []
+
+    if not os.path.exists(image_folder):
+        raise FileNotFoundError(f"{image_folder} not found")
+
+    tot = 0
+    err = 0
+
+    for path, _, files in os.walk(image_folder):
+        for file in files:
+            if ".jpg" not in file:
+                continue
+            extracted_id = extract_id_with_extension(file)
+            # Try to find the matching ID in the dataframe
+            tot += 1
+            try:
+                matching_row = df.loc[extracted_id]
+                print(matching_row)
+                exit()
+                obj = matching_row.to_dict()
+                obj["nucraw"] = augment_sample(obj["nucraw"], r)
+                obj["image_path"] = file
+                rows.append(obj)
+            except Exception as e:
+                err += 1
+                print(f"Could not find matching sample for {extracted_id} - {os.path.join(path, file)}")
+                exit()
+
+    out_df = pd.DataFrame(rows)
+
+    print(f"Error Rate: {err / tot * 100:.2f}%")
+
+    return out_df
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('file', type=str, help="Path to the dataset to augment")
@@ -109,38 +160,43 @@ if __name__ == "__main__":
     parser.add_argument('--parent_type', type=str, default=None, help="Only keep samples with this parent type = parent")
     parser.add_argument('--parent', type=str, default=None, help="The value of the parent taxonomy to balance on")
     parser.add_argument('--num_classes', type=int, default=-1, help="The number of classes to generate (defaults to all classes)")
+    parser.add_argument('--folder_mode', action="store_true", help="Will generate a dataset from a tree of augmented images")
+    parser.add_argument('--image_folder', type=str, default=None, help="Only does anything if folder_mode is true")
     args = parser.parse_args()
 
     np.random.seed(0)
 
     df = pd.read_csv(args.file, sep=args.sep)
 
-    df = process_df(df, args.level, args.parent, args.parent_type, args.num_classes)
-    if args.out is None:
-        args.out = args.file
-
-    if ".tsv" in args.out:
-        chopped_out = args.out.replace(".tsv", "_chopped.tsv")
-        args.out = args.out.replace(".tsv", "_augmented.tsv")
+    if args.folder_mode:
+        out_df = folder_augment(df, args.image_folder, args.r)
     else:
-        chopped_out = args.out.replace(".csv", "_chopped.csv")
-        args.out = args.out.replace(".csv", "_augmented.csv")
+        df = process_df(df, args.level, args.parent, args.parent_type, args.num_classes)
+        if args.out is None:
+            args.out = args.file
 
-    if args.parent:
-        df.to_csv(chopped_out, sep=args.sep, index=False)
-        print(f"Chopped dataset written to {chopped_out}")
+        if ".tsv" in args.out:
+            chopped_out = args.out.replace(".tsv", "_chopped.tsv")
+            args.out = args.out.replace(".tsv", "_augmented.tsv")
+        else:
+            chopped_out = args.out.replace(".csv", "_chopped.csv")
+            args.out = args.out.replace(".csv", "_augmented.csv")
 
-    if args.samples == -1:
-        args.samples = df[args.level].value_counts().max()
+        if args.parent:
+            df.to_csv(chopped_out, sep=args.sep, index=False)
+            print(f"Chopped dataset written to {chopped_out}")
 
-    print(f"Input Size: {len(df):,}")
-    print(f"Output size: {args.samples * len(df[args.level].unique()):,}")
-    cont = input("Continue? (Y/n) ")
+        if args.samples == -1:
+            args.samples = df[args.level].value_counts().max()
 
-    if cont.lower() == "n":
-        exit()
+        print(f"Input Size: {len(df):,}")
+        print(f"Output size: {args.samples * len(df[args.level].unique()):,}")
+        cont = input("Continue? (Y/n) ")
 
-    out_df = augment(df, args.level, args.r, args.samples)
-        
+        if cont.lower() == "n":
+            exit()
+
+        out_df = augment(df, args.level, args.r, args.samples)
+    
     out_df.to_csv(args.out, sep=args.sep, index=False)
     print(f"Output written to {args.out}")

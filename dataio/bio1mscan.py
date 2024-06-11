@@ -1,25 +1,18 @@
+import os
 import torch
 import pandas as pd
 from torch.utils.data import Dataset
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+import numpy as np
+import regex as re
 
 from dataio.genetics import GeneticCGR, GeneticKmerFrequency, GeneticOneHot
 
 
 def extract_id(path):
-    # Find the index of the first occurrence of ".jpg"
-    jpg_index = path.find(".jpg")
-    if jpg_index == -1:
-        return None  # ".jpg" not found in the path
-    # Find the start of the ID by searching backwards from ".jpg" index
-    id_start_index = jpg_index
-    while id_start_index > 0 and path[id_start_index - 1].isdigit():
-        id_start_index -= 1
-    # Extract the ID substring
-    id_string = path[id_start_index:jpg_index]
-    return id_string
-
+    pattern = r'(?<=_)(?<id>(BIOUG)?\d+(\-[^\.]\d+)?)(?=\.jpg)'
+    return re.search(pattern, path).group('id')
 
 class Bio1MScan(Dataset):
 
@@ -43,19 +36,21 @@ class Bio1MScan(Dataset):
                  imgpath: str,
                  img_transformation: transforms,
                  genetic_transformation: str = 'onehot',
-                 genetic_level: str = None,
-                 genetic_classes: dict = None):
+                 level: str = None,
+                 classes: dict = None,
+                 sep: str = "\t"):
 
         # Read the Genetic and Image Information
-
-        self.genetic_dataset = pd.read_csv(datapath)
-
+        self.genetic_data = pd.read_csv(datapath, sep=sep)
+        self.level = level
         self.img_dataset = datasets.ImageFolder(
-            datapath,
+            imgpath,
             img_transformation)
 
-        # Initialize Genetic Transformation
+        # Set the index of the genetic dataset to be the image file path
+        self.genetic_data = self.genetic_data.set_index("image_path") 
 
+        # Initialize Genetic Transformation
         if genetic_transformation == 'onehot':
             self.genetic_transform = GeneticOneHot(
                 length=720, zero_encode_unknown=True, include_height_channel=True)
@@ -66,20 +61,36 @@ class Bio1MScan(Dataset):
         else:
             self.genetic_transform = None
 
+        self.taxnomy_level = ["phylum", "class", "order", "family", "subfamily", "tribe", "genus", "species", "subspecies"]
+        if self.level:
+            if not self.level in self.taxnomy_level:
+                raise ValueError(f"drop_level must be one of {self.taxnomy_level}")
+            self.genetic_data = self.genetic_data[self.genetic_data[self.level] != "not_classified"]
+
+    def get_classes(self):
+        raise NotImplementedError("Note: The order of classes for training and validation come from the same source, the order of filenames in the data folder.")
+
     def __getitem__(self, index):
-
         path, _ = self.img_dataset.imgs[index]
-
         img, label = self.img_dataset[index]
+        print(path)
 
-        sampleid = extract_id(path)
+        file = os.path.split(path)[-1]
 
-        genetic = self.genetic_dataset[self.genetic_dataset['sampleid']
-                                        == sampleid]['nucraw'].values[0]
-        
-        genetic = self.genetic_transform(genetic)
+        try:
+            sample = self.genetic_data.loc[file]
+
+        except KeyError as e:
+            print(f"{e} not found in genetic dataset. Are you using a data file generated for this image dataset?")
+            exit()
+            # print(f"{sampleid} found")
+            # print(genetic)
+            # print(self.genetic_data[self.genetic_data['sampleid']
+            #                             == sampleid]['nucraw'].values)
+
+        genetic = self.genetic_transform(sample["nucraw"])
         
         return img, genetic, label
 
     def __len__(self):
-        return len(self.genetic_dataset)
+        return len(self.img_dataset)
