@@ -13,7 +13,7 @@ DATASET:
 
   IMAGE: 
     SIZE: 256
-    PROTOTYPE_SHAPE: (2000, 128, 1, 1)
+    PROTOTYPE_SHAPE: (320, 2048, 1, 1)
     MODEL_PATH: "datasets/bioscan" # should be updated 
     TRAIN_DIR: "datasets/bioscan/train_diptera_augmented"
     TEST_DIR: "datasets/bioscan/test_diptera"
@@ -23,7 +23,7 @@ DATASET:
 
   GENETIC:
     SIZE: 720
-    PROTOTYPE_SHAPE: (1600, 128, 1, 8)
+    PROTOTYPE_SHAPE: (1600, 64, 1, 1)
     TAXONOMY_NAME: 'family'
     ORDER_NAME: 'Diptera'
     TRANSFORM: 'onehot'

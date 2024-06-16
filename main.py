@@ -39,7 +39,7 @@ def main():
     # Get the dataset for training
     train_loader, train_push_loader, val_loader = get_dataset(cfg, log)
 
-    print(train_loader.dataset[0])
+    # print(train_loader.dataset[0])
 
     # Construct and parallel the model
     ppnet = construct_ppnet(cfg)
