@@ -75,7 +75,6 @@ class MultiModal_PPNet(nn.Module):
         pretrained_weights = torch.load(datapath)
         self.genetic_net.load_state_dict(pretrained_weights)
     
-    
     def push_forward(self):
         pass
     

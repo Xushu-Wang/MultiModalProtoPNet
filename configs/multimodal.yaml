@@ -23,7 +23,7 @@ DATASET:
 
   GENETIC:
     SIZE: 720
-    PROTOTYPE_SHAPE: (400, 128, 1, 8)
+    PROTOTYPE_SHAPE: (1600, 128, 1, 8)
     TAXONOMY_NAME: 'family'
     ORDER_NAME: 'Diptera'
     TRANSFORM: 'onehot'

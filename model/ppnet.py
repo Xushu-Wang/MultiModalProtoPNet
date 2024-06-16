@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# TODO - Add pruning
 class PPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
@@ -10,7 +9,11 @@ class PPNet(nn.Module):
                  prototype_activation_function='log',
                  genetics_mode=False,
                  fix_prototypes=False,
+                 rearrange_logit_map=None
         ):
+        """
+        Rearrange logit map maps the genetic class index to the image class index, which will be considered the true class index.
+        """
                 
         super().__init__()
         

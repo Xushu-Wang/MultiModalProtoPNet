@@ -87,8 +87,7 @@ def get_dataset(cfg, log):
         train_push_loader = DataLoader(
             train_push_dataset, batch_size=cfg.DATASET.TRAIN_PUSH_BATCH_SIZE, shuffle=False,
             num_workers=4, pin_memory=False)
-        
-        
+
         validation_dataset = GeneticDataset(cfg.DATASET.GENETIC.VALIDATION_PATH, 
                               cfg.DATASET.GENETIC.TRANSFORM,
                               cfg.DATASET.GENETIC.TAXONOMY_NAME,
