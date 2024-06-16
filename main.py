@@ -65,7 +65,7 @@ def main():
 
     if cfg.DATASET.NAME == 'multimodal':
         for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
-            log('epoch: \t{0}'.format(epoch))
+            log('optimize epoch: \t{0}'.format(epoch))
             
             ppnet_multi.last_layer()
             
@@ -75,7 +75,52 @@ def main():
             accu = test_multimodal(model=ppnet_multi, dataloader=val_loader,
                             class_specific=class_specific, log=log)
              
+                     
+        if cfg.OPTIM.JOINT:
+            for i in range(5):
+                log('joint epoch: \t{0}'.format(epoch))
+                ppnet_multi.joint()
+                
+                _ = train_multimodal(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer, 
+                            class_specific=class_specific, coefs=coefs, log=log)
+            
+                accu = test_multimodal(model=ppnet_multi, dataloader=val_loader,
+                                class_specific=class_specific, log=log)
+                
+            push.push_prototypes(
+                train_push_loader, # pytorch dataloader (must be unnormalized in [0,1])
+                prototype_network_parallel=ppnet_multi.image_net, # pytorch network with prototype_vectors
+                class_specific=class_specific,
+                preprocess_input_function=cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION, # normalize if needed
+                prototype_layer_stride=1,
+                root_dir_for_saving_prototypes=cfg.OUTPUT.IMG_DIR, # if not None, prototypes will be saved here
+                epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
+                prototype_img_filename_prefix=cfg.OUTPUT.PROTOTYPE_IMG_FILENAME_PREFIX,
+                prototype_self_act_filename_prefix=cfg.OUTPUT.PROTOTYPE_SELF_ACT_FILENAME_PREFIX,
+                proto_bound_boxes_filename_prefix=cfg.OUTPUT.PROTO_BOUND_BOXES_FILENAME_PREFIX,
+                save_prototype_class_identity=True,
+                log=log,
+                no_save=cfg.OUTPUT.NO_SAVE,
+                fix_prototypes=cfg.DATASET.GENETIC.FIX_PROTOTYPES)
+            
+            push.push_prototypes(
+                train_push_loader, # pytorch dataloader (must be unnormalized in [0,1])
+                prototype_network_parallel=ppnet_multi.genetic_net, # pytorch network with prototype_vectors
+                class_specific=class_specific,
+                preprocess_input_function=cfg.OUTPUT.PREPROCESS_INPUT_FUNCTION, # normalize if needed
+                prototype_layer_stride=1,
+                root_dir_for_saving_prototypes=cfg.OUTPUT.IMG_DIR, # if not None, prototypes will be saved here
+                epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
+                prototype_img_filename_prefix=cfg.OUTPUT.PROTOTYPE_IMG_FILENAME_PREFIX,
+                prototype_self_act_filename_prefix=cfg.OUTPUT.PROTOTYPE_SELF_ACT_FILENAME_PREFIX,
+                proto_bound_boxes_filename_prefix=cfg.OUTPUT.PROTO_BOUND_BOXES_FILENAME_PREFIX,
+                save_prototype_class_identity=True,
+                log=log,
+                no_save=cfg.OUTPUT.NO_SAVE,
+                fix_prototypes=cfg.DATASET.GENETIC.FIX_PROTOTYPES)
+            
         logclose()
+
         
     else:
         for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):

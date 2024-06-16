@@ -88,6 +88,8 @@ _C.OPTIM.NUM_WARM_EPOCHS = 5
 
 _C.OPTIM.PUSH_START = 10
 _C.OPTIM.PUSH_EPOCHS = [i for i in range(_C.OPTIM.NUM_TRAIN_EPOCHS) if i % 10 == 0]
+_C.OPTIM.JOINT = False
+
 
 
 # Output 

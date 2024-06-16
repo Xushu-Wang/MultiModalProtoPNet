@@ -33,6 +33,9 @@ DATASET:
     TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
     TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-validation.tsv"
 
+  OPTIM:
+    JOINT: False
+
 OUTPUT:
   MODEL_DIR: "./saved_models"
   IMG_DIR: "./saved_models/img"
