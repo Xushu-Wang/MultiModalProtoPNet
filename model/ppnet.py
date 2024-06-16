@@ -62,7 +62,7 @@ class PPNet(nn.Module):
         if self.prototype_distance_function == 'cosine':
             self.add_on_layers = nn.Sequential()
             
-            self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
+            self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
                                 requires_grad=True)
             
         elif self.prototype_distance_function == 'l2':
@@ -75,7 +75,7 @@ class PPNet(nn.Module):
                 nn.Sigmoid()
             )
             
-            self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
+            self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
                                 requires_grad=True)
             
 
