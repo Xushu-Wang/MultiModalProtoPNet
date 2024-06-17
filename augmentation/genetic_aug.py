@@ -112,7 +112,7 @@ def process_df(df, level, parent, parent_type, num_classes):
     
     return df
 
-def folder_augment(df, image_folder, r):
+def folder_augment(df, image_folder, r, no_augment):
     out_df = pd.DataFrame(columns=[*df.columns])
     df = df.set_index("image_file")
     rows = []
@@ -132,10 +132,9 @@ def folder_augment(df, image_folder, r):
             tot += 1
             try:
                 matching_row = df.loc[extracted_id]
-                print(matching_row)
-                exit()
                 obj = matching_row.to_dict()
-                obj["nucraw"] = augment_sample(obj["nucraw"], r)
+                if not no_augment:
+                    obj["nucraw"] = augment_sample(obj["nucraw"], r)
                 obj["image_path"] = file
                 rows.append(obj)
             except Exception as e:
@@ -162,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_classes', type=int, default=-1, help="The number of classes to generate (defaults to all classes)")
     parser.add_argument('--folder_mode', action="store_true", help="Will generate a dataset from a tree of augmented images")
     parser.add_argument('--image_folder', type=str, default=None, help="Only does anything if folder_mode is true")
+    parser.add_argument('--no_augment', action="store_true", help="Only does anything if folder_mode is true. Wont augment strings.")
     args = parser.parse_args()
 
     np.random.seed(0)
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     df = pd.read_csv(args.file, sep=args.sep)
 
     if args.folder_mode:
-        out_df = folder_augment(df, args.image_folder, args.r)
+        out_df = folder_augment(df, args.image_folder, args.r, args.no_augment)
     else:
         df = process_df(df, args.level, args.parent, args.parent_type, args.num_classes)
         if args.out is None:

@@ -23,15 +23,15 @@ DATASET:
 
   GENETIC:
     SIZE: 720
-    PROTOTYPE_SHAPE: (400, 128, 1, 8)
+    PROTOTYPE_SHAPE: (1600, 128, 1, 8)
     TAXONOMY_NAME: 'family'
     ORDER_NAME: 'Diptera'
     TRANSFORM: 'onehot'
 
     MODEL_PATH: "./data"
-    TRAIN_DIR: "datasets/genetics/small_diptera_family-train.tsv"
-    TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
-    TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-validation.tsv"
+    TRAIN_PATH: "datasets/genetics/multimodal/train_diptera_augmented.tsv"
+    TRAIN_PUSH_DIR: "datasets/genetics/train_diptera.tsv"
+    VALIDATION_PATH: "datasets/genetics/multimodal/test_diptera.tsv"
 
 OUTPUT:
   MODEL_DIR: "./saved_models"
