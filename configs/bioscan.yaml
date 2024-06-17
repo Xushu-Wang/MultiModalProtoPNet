@@ -11,7 +11,7 @@ DATASET:
     NUM_CLASSES: 40
     IMAGE: 
         SIZE: 256
-        PROTOTYPE_SHAPE: (400, 2048, 1, 1)
+        PROTOTYPE_SHAPE: (120, 2048, 1, 1)
         TRAIN_DIR: "datasets/bioscan/train_diptera_augmented"
         TEST_DIR: "datasets/bioscan/test_diptera"
         TRAIN_PUSH_DIR: "datasets/bioscan/train_diptera"
@@ -22,15 +22,15 @@ DATASET:
         FIX_PROTOTYPES: False
 
 OPTIM:
-    NUM_TRAIN_EPOCHS: 30
-    JOINT_OPTIMIZER_LAYERS:
-        ADD_ON_LAYERS: 1e-3
-        PROTOTYPE_VECTORS: 1e-3
-    WARM_OPTIMIZER_LAYERS:
-        ADD_ON_LAYERS: 1e-3
-        PROTOTYPE_VECTORS: 1e-3
-    COEFS:
-        SEP: -0.1
+    NUM_TRAIN_EPOCHS: 31
+    # JOINT_OPTIMIZER_LAYERS:
+    #     ADD_ON_LAYERS: 1e-3
+    #     PROTOTYPE_VECTORS: 1e-3
+    # WARM_OPTIMIZER_LAYERS:
+    #     ADD_ON_LAYERS: 1e-3
+    #     PROTOTYPE_VECTORS: 1e-3
+    # COEFS:
+    #     SEP: -0.1
 
 
 OUTPUT:

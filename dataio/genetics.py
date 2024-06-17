@@ -190,7 +190,7 @@ class GeneticDataset(Dataset):
                  datapath: str,
                  transform='onehot',
                  level: str = None,
-                 classes: list[str] = None,
+                 classes: list = None,
                  restraint: tuple = None,
                  max_class_count = 40
         ):

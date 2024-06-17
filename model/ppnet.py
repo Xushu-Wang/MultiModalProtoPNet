@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# TODO - Add pruning
 class PPNet(nn.Module):
     def __init__(self, features, img_size, prototype_shape,
                  proto_layer_rf_info, num_classes, init_weights=True,
@@ -10,7 +9,11 @@ class PPNet(nn.Module):
                  prototype_activation_function='log',
                  genetics_mode=False,
                  fix_prototypes=False,
+                 rearrange_logit_map=None
         ):
+        """
+        Rearrange logit map maps the genetic class index to the image class index, which will be considered the true class index.
+        """
                 
         super().__init__()
         
@@ -62,7 +65,7 @@ class PPNet(nn.Module):
         if self.prototype_distance_function == 'cosine':
             self.add_on_layers = nn.Sequential()
             
-            self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
+            self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
                                 requires_grad=True)
             
         elif self.prototype_distance_function == 'l2':
@@ -75,7 +78,7 @@ class PPNet(nn.Module):
                 nn.Sigmoid()
             )
             
-            self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
+            self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
                                 requires_grad=True)
             
 

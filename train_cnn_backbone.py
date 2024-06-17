@@ -85,7 +85,7 @@ def main():
     max_balanced_accuracy = 0
     max_balanced_accuracy_epoch = 0
 
-    for epoch in range(8):
+    for epoch in range(16):
         running_loss = 0.0
         correct_guesses = 0
         total_guesses = 0

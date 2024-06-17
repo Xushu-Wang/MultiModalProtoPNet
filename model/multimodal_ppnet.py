@@ -5,6 +5,8 @@ import torch.nn.functional as F
                          
 from model.utils import position_encodings
 from model.ppnet import PPNet
+import prototype.push as push       
+
 
 
 class MultiModal_PPNet(nn.Module):
@@ -58,12 +60,16 @@ class MultiModal_PPNet(nn.Module):
             p.requires_grad = False
         for p in self.genetic_net.parameters():
             p.requires_grad = False
+        for p in self.last_layer.parameters():
+            p.requires_grad = True
             
             
     def joint(self):
         for p in self.image_net.parameters():
             p.requires_grad = True
         for p in self.genetic_net.parameters():
+            p.requires_grad = True
+        for p in self.last_layer.parameters():
             p.requires_grad = True
     
     
@@ -74,10 +80,6 @@ class MultiModal_PPNet(nn.Module):
     def load_state_dict_genetic(self, datapath: str):
         pretrained_weights = torch.load(datapath)
         self.genetic_net.load_state_dict(pretrained_weights)
-    
-    
-    def push_forward(self):
-        pass
     
     
     def prune_prototypes(self):

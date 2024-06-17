@@ -13,17 +13,19 @@ DATASET:
 
   IMAGE: 
     SIZE: 256
-    PROTOTYPE_SHAPE: (2000, 128, 1, 1)
-    MODEL_PATH: "datasets/bioscan" # should be updated 
+    PROTOTYPE_SHAPE: (320, 2048, 1, 1)
+
+    MODEL_PATH: "/home/users/xw214/MultiModalProtoPNet/saved_models/bioscan/10nopush0.7306.pth"
     TRAIN_DIR: "datasets/bioscan/train_diptera_augmented"
     TEST_DIR: "datasets/bioscan/test_diptera"
     TRAIN_PUSH_DIR: "datasets/bioscan/train_diptera"
+
     TRANSFORM_MEAN: (0.485, 0.456, 0.406)
     TRANSFORM_STD: (0.229, 0.224, 0.225)
 
   GENETIC:
     SIZE: 720
-    PROTOTYPE_SHAPE: (1600, 128, 1, 8)
+    PROTOTYPE_SHAPE: (1600, 64, 1, 1)
     TAXONOMY_NAME: 'family'
     ORDER_NAME: 'Diptera'
     TRANSFORM: 'onehot'
