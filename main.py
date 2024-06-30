@@ -10,7 +10,7 @@ from model.model import construct_ppnet
 from model.utils import get_optimizers
 
 import train.train_and_test as tnt
-from train_multimodal import train_multimodal, test_multimodal, last_only_multimodal, joint_multimodal
+from train.train_multimodal import train_multimodal, test_multimodal, last_only_multimodal, joint_multimodal
 
 import prototype.push as push       
 
