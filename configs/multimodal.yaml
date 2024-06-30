@@ -1,6 +1,8 @@
 EXPERIMENT_RUN: 001
 
 MODEL:
+  BACKBONE: 'resnetbioscan'
+  GENETIC_BACKBONE: "/home/users/xw214/MultiModalProtoPNet/pretrained_backbones/family_new_aug_1_best.pth"
   PROTOTYPE_DISTANCE_FUNCTION: 'cosine'
   PROTOTYPE_ACTIVATION_FUNCTION: 'linear'
 
@@ -13,9 +15,9 @@ DATASET:
 
   IMAGE: 
     SIZE: 256
-    PROTOTYPE_SHAPE: (320, 2048, 1, 1)
+    PROTOTYPE_SHAPE: (200, 2048, 1, 1)
 
-    MODEL_PATH: "/home/users/xw214/MultiModalProtoPNet/saved_models/bioscan/10nopush0.7306.pth"
+    MODEL_PATH: "/home/users/xw214/MultiModalProtoPNet/saved_models/bioscan/20nopush0.7075.pth"
     TRAIN_DIR: "datasets/bioscan/train_diptera_augmented"
     TEST_DIR: "datasets/bioscan/test_diptera"
     TRAIN_PUSH_DIR: "datasets/bioscan/train_diptera"
@@ -30,10 +32,10 @@ DATASET:
     ORDER_NAME: 'Diptera'
     TRANSFORM: 'onehot'
 
-    MODEL_PATH: "./data"
-    TRAIN_PATH: "datasets/genetics/multimodal/train_diptera_augmented.tsv"
-    TRAIN_PUSH_DIR: "datasets/genetics/train_diptera.tsv"
-    VALIDATION_PATH: "datasets/genetics/multimodal/test_diptera.tsv"
+    MODEL_PATH: "/home/users/xw214/MultiModalProtoPNet/pretrained_backbones/genetics_ppnet.pth"
+    TRAIN_PATH: "datasets/genetics/multimodal-train_diptera.tsv"
+    TRAIN_PUSH_DIR: "datasets/genetics/multimodal-train_diptera_augmented.tsv"
+    VALIDATION_PATH: "datasets/genetics/multimodal-test_diptera.tsv"
 
 OUTPUT:
   MODEL_DIR: "./saved_models"

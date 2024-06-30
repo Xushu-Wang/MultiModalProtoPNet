@@ -10,7 +10,7 @@ from model.model import construct_ppnet
 from model.utils import get_optimizers
 
 import train.train_and_test as tnt
-from train_multimodal import train_multimodal, test_multimodal
+from train_multimodal import train_multimodal, test_multimodal, last_only_multimodal, joint_multimodal
 
 import prototype.push as push       
 
@@ -43,12 +43,15 @@ def main():
 
     # Construct and parallel the model
     ppnet = construct_ppnet(cfg)
+    
+    if cfg.DATASET.NAME == 'multimodal':
+        ppnet.load_state_dict_genetic(cfg.DATASET.GENETIC.MODEL_PATH)
+        ppnet.load_state_dict_img(cfg.DATASET.IMAGE.MODEL_PATH)
+    
     ppnet_multi = torch.nn.DataParallel(ppnet) 
     class_specific = True
     
     if cfg.DATASET.NAME == 'multimodal':
-        ppnet_multi.load_state_dict_img(cfg.DATASET.IMG.MODEL_PATH)
-        ppnet_multi.load_state_dict_genetic(cfg.DATASET.GENETIC.MODEL_PATH)
         last_layer_optimizer = get_optimizers(cfg, ppnet)
     else: 
         joint_optimizer, joint_lr_scheduler, warm_optimizer, last_layer_optimizer = get_optimizers(cfg, ppnet)
@@ -65,9 +68,8 @@ def main():
 
     if cfg.DATASET.NAME == 'multimodal':
         for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
-            log('optimize epoch: \t{0}'.format(epoch))
             
-            ppnet_multi.last_layer()
+            last_only_multimodal(model=ppnet_multi, log=log)
             
             _ = train_multimodal(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer, 
                             class_specific=class_specific, coefs=coefs, log=log)
@@ -78,8 +80,7 @@ def main():
                      
         if cfg.OPTIM.JOINT:
             for i in range(5):
-                log('joint epoch: \t{0}'.format(epoch))
-                ppnet_multi.joint()
+                joint_multimodal(model=ppnet_multi, log=log)
                 
                 _ = train_multimodal(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer, 
                             class_specific=class_specific, coefs=coefs, log=log)
@@ -143,7 +144,7 @@ def main():
             save_model_w_condition(model=ppnet, model_dir=cfg.OUTPUT.MODEL_DIR, model_name=str(epoch) + 'nopush', accu=accu,
                                         target_accu=0.70, log=log)
 
-        # Pushing Epochs
+            # Pushing Epochs
             print(os.path.join(cfg.OUTPUT.IMG_DIR, str(epoch) + '_' + 'push_weights.pth'))
             if epoch >= cfg.OPTIM.PUSH_START and epoch in cfg.OPTIM.PUSH_EPOCHS:
                 push.push_prototypes(

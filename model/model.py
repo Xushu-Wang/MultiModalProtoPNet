@@ -156,10 +156,10 @@ def construct_ppnet(cfg):
         return construct_multimodal_ppnet(
             base_architecture=cfg.MODEL.BACKBONE,
             img_size=cfg.DATASET.IMAGE.SIZE,
-            length=cfg.DATASET.GENETIC.LENGTH, 
-            model_path = cfg.MODEL.GENETIC.DATA_PATH,
-            img_prototype_shape=cfg.MODEL.IMAGE.PROTOTYPE_SHAPE,
-            genetic_prototype_shape=cfg.MODEL.DATASET.GENETIC.PROTOTYPE_SHAPE,
+            length=cfg.DATASET.GENETIC.SIZE, 
+            model_path = cfg.MODEL.GENETIC_BACKBONE,
+            img_prototype_shape=cfg.DATASET.IMAGE.PROTOTYPE_SHAPE,
+            genetic_prototype_shape=cfg.DATASET.GENETIC.PROTOTYPE_SHAPE,
             num_classes=cfg.DATASET.NUM_CLASSES,
             prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION
         ).to(cfg.MODEL.DEVICE)

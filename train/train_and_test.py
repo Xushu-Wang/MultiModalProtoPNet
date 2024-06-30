@@ -141,7 +141,7 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
 
     log('\tbalanced accu:\t{0}'.format((torch.sum(class_correct_counts / torch.maximum(class_guess_counts, torch.ones(class_guess_counts.shape, device=class_guess_counts.device)))).item()  / class_count))
 
-    log(f'{class_correct_counts / torch.maximum(class_guess_counts, torch.ones(class_guess_counts.shape, device=class_guess_counts.device))}')
+    log('\tclass accu:\t{0}'.format(class_correct_counts / torch.maximum(class_guess_counts, torch.ones(class_guess_counts.shape, device=class_guess_counts.device)).item()))
 
     return n_correct / n_examples
 

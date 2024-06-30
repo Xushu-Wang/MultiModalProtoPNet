@@ -14,14 +14,14 @@ def get_dataset(cfg, log):
 
         
         train_dataset = Bio1MScan(
-            datapath = cfg.DATASET.GENETIC.TRAIN_DIR,
+            datapath = cfg.DATASET.GENETIC.TRAIN_PATH,
             imgpath=cfg.DATASET.IMAGE.TRAIN_DIR,
             img_transformation=transforms.Compose([
                 transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
                 normalize]),
             genetic_transformation=cfg.DATASET.GENETIC.TRANSFORM,
-            genetic_level=cfg.DATASET.GENETIC.TAXONOMY_NAME
+            level=cfg.DATASET.GENETIC.TAXONOMY_NAME
         )
         
         
@@ -38,7 +38,7 @@ def get_dataset(cfg, log):
                 transforms.ToTensor(),
                 normalize]),
             genetic_transformation=cfg.DATASET.GENETIC.TRANSFORM,
-            genetic_level=cfg.DATASET.GENETIC.TAXONOMY_NAME
+            level=cfg.DATASET.GENETIC.TAXONOMY_NAME
         )
         
         
@@ -47,15 +47,14 @@ def get_dataset(cfg, log):
             num_workers=4, pin_memory=False)
         
         test_dataset = Bio1MScan(
-            datapath = cfg.DATASET.GENETIC.TEST_DIR,
-            imgpath=cfg.DATASET.IMG.TEST_DIR,
+            datapath = cfg.DATASET.GENETIC.VALIDATION_PATH,
+            imgpath=cfg.DATASET.IMAGE.TEST_DIR,
             img_transformation=transforms.Compose([
                 transforms.Resize(size=(cfg.DATASET.IMAGE.SIZE, cfg.DATASET.IMAGE.SIZE)),
                 transforms.ToTensor(),
                 normalize,]),
             genetic_transformation=cfg.DATASET.GENETIC.TRANSFORM,
-            genetic_level=cfg.DATASET.GENETIC.TAXONOMY_NAME,
-            genetic_classes= train_dataset.get_classes(cfg.DATASET.GENETIC.TAXONOMY_NAME)[0]
+            level=cfg.DATASET.GENETIC.TAXONOMY_NAME,
         )
         
         test_loader = DataLoader(

@@ -73,7 +73,7 @@ class Bio1MScan(Dataset):
     def __getitem__(self, index):
         path, _ = self.img_dataset.imgs[index]
         img, label = self.img_dataset[index]
-        # print(path)
+        print(path)
 
         file = os.path.split(path)[-1]
 

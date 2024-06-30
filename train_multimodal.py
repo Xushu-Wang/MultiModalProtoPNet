@@ -155,3 +155,26 @@ def test_multimodal(model, dataloader, class_specific=False, log=print):
                           class_specific=class_specific, log=log)
 
 
+
+
+def last_only_multimodal(model, log=print):
+    for p in model.module.image_net.parameters():
+        p.requires_grad = False
+    for p in model.module.genetic_net.parameters():
+        p.requires_grad = False
+    for p in model.module.last_layer.parameters():
+        p.requires_grad = True
+    
+    log('\tlast layer')
+
+
+def joint_multimodal(model, log=print):
+    for p in model.module.image_net.parameters():
+        p.requires_grad = True
+    for p in model.module.genetic_net.parameters():
+        p.requires_grad = True
+    for p in model.module.last_layer.parameters():
+        p.requires_grad = True
+    
+    log('\tjoint')
+
