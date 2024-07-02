@@ -56,10 +56,10 @@ class MultiModal_PPNet(nn.Module):
             self.initialize_weights()
         
         
-    def forward(self, x):
+    def forward(self, x, y):
         
         img_logit, img_dist = self.image_net(x)
-        genetic_logit, genetic_dist = self.genetic_net(x)
+        genetic_logit, genetic_dist = self.genetic_net(y)
         
         combined_logits = torch.cat((img_logit, genetic_logit), dim=1)
         logits = self.last_layer(combined_logits)

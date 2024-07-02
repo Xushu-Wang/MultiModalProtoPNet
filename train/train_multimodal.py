@@ -112,7 +112,8 @@ def _train_or_test_multimodal(model, dataloader, optimizer=None, class_specific=
             loss.backward()
             optimizer.step()
 
-        del input
+        del image
+        del genetics
         del target
         del output
         del min_img_distances
