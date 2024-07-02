@@ -68,7 +68,8 @@ def main():
 
     if cfg.DATASET.NAME == 'multimodal':
         for epoch in range(cfg.OPTIM.NUM_TRAIN_EPOCHS):
-            
+            log('epoch: \t{0}'.format(epoch))
+
             last_only_multimodal(model=ppnet_multi, log=log)
             
             _ = train_multimodal(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer, 
