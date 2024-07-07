@@ -15,7 +15,7 @@ DATASET:
 
   IMAGE: 
     SIZE: 256
-    PROTOTYPE_SHAPE: (200, 2048, 1, 1)
+    PROTOTYPE_SHAPE: (120, 2048, 1, 1)
 
     MODEL_PATH: "/home/users/xw214/MultiModalProtoPNet/saved_models/bioscan/20nopush0.7075.pth"
     TRAIN_DIR: "datasets/bioscan/train_diptera_augmented"
@@ -36,6 +36,11 @@ DATASET:
     TRAIN_PATH: "datasets/genetics/multimodal-train_diptera_augmented.tsv"
     TRAIN_PUSH_DIR: "datasets/genetics/multimodal-train_diptera.tsv"
     VALIDATION_PATH: "datasets/genetics/multimodal-test_diptera.tsv"
+
+OPTIM:
+  NUM_TRAIN_EPOCHS: 30
+  LAST_LAYER_OPTIMIZER_LAYERS:
+    LR: 1e-3
 
 OUTPUT:
   MODEL_DIR: "./saved_models"

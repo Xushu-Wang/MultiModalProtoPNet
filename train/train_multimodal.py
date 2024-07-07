@@ -128,7 +128,7 @@ def _train_or_test_multimodal(model, dataloader, optimizer=None, class_specific=
     # if class_specific:
     #     log('\tseparation:\t{0}'.format(total_separation_cost / n_batches))
     #     log('\tavg separation:\t{0}'.format(total_avg_separation_cost / n_batches))
-    # log('\taccu: \t\t{0}%'.format(n_correct / n_examples * 100))
+    log('\taccu: \t\t{0}%'.format(n_correct / n_examples * 100))
     # log('\tl1: \t\t{0}'.format(model.module.last_layer.weight.norm(p=1).item()))
     # p = model.module.prototype_vectors.view(model.module.num_prototypes, -1).cpu()
     # with torch.no_grad():
@@ -136,6 +136,8 @@ def _train_or_test_multimodal(model, dataloader, optimizer=None, class_specific=
     # log('\tp dist pair: \t{0}'.format(p_avg_pair_dist.item()))
     log('\tbalanced accu:\t{0}'.format(torch.mean(class_correct_counts / class_guess_counts).item()))
     log(f'\tmode: \t{"train" if is_train else "test"}')
+    log('\tlinear layer weight:\t{0}'.format(model.module.last_layer.weight))
+    log('\tlinear layer bias:\t{0}\n'.format(model.module.last_layer.bias))
 
     return n_correct / n_examples
 
