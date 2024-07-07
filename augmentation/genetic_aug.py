@@ -46,9 +46,9 @@ def extract_id_with_extension(file):
     pattern = r'(?<=_)(?<id>(BIOUG)?\d+(\-[^\.]\d+)?\.jpg)'
     return re.search(pattern, file).group('id')
     
-def augment_sample(sample, r):
-    insertion_count = np.random.randint(0, 3)
-    deletion_count = np.random.randint(0, 3)
+def augment_sample(sample, r, insertion_amount, deletion_amount):
+    insertion_count = np.random.randint(0, insertion_amount+1)
+    deletion_count = np.random.randint(0, deletion_amount+1)
 
     insertion_indices = np.random.randint(0, len(sample), insertion_count)
     for idx in insertion_indices:
@@ -64,7 +64,7 @@ def augment_sample(sample, r):
     
     return sample
 
-def augment_class(class_df, c, r, samples, out_list):
+def augment_class(class_df, c, r, insertion_amount, deletion_amount, samples, out_list):
     if len(class_df) >= samples:
         output = class_df.sample(samples)
     else:
@@ -73,21 +73,21 @@ def augment_class(class_df, c, r, samples, out_list):
         augmented_df = class_df.sample(remaining, replace=True, random_state=0)
         augmented_df = augmented_df.reset_index()
         augmented_df["sampleid"] = augmented_df["sampleid"].astype(str) + "_augmented_"  + augmented_df.index.astype(str) 
-        augmented_df["nucraw"] = augmented_df["nucraw"].apply(lambda x: augment_sample(x, r))
+        augmented_df["nucraw"] = augmented_df["nucraw"].apply(lambda x: augment_sample(x, r, insertion_amount, deletion_amount,))
         output = pd.concat([class_df, augmented_df])
 
     print(f"Class {c} Augmented {len(class_df)} -> {len(output)}")
     out_list.append(output)
 
 
-def augment(df, level, r, samples):
+def augment(df, level, r, insertion_amount, deletion_amount, samples):
     classes = df[level].unique()
 
     outputs = []
 
     for c in classes:
         class_df = df[df[level] == c]
-        augment_class(class_df, c, r, samples, outputs)
+        augment_class(class_df, c, r, insertion_amount, deletion_amount, samples, outputs)
 
     return pd.concat(outputs)      
         
@@ -154,6 +154,8 @@ if __name__ == "__main__":
     parser.add_argument("level", type=str, help="The level of the taxonomy to balance on")
     parser.add_argument('--out', type=str, default=None, help="Path to the output file (don't include _augmented)")
     parser.add_argument('-r', type=float, default=0.05, help="Noise rate")
+    parser.add_argument('--insertion-amount', type=float, default=2, help="Maximum # of Nucleotides to Insert")
+    parser.add_argument('--deletion-amount', type=float, default=2, help="Maximum # of Nucleotides to Delete")
     parser.add_argument('--sep', type=str, default="\t", help="The separator used in the input file")
     parser.add_argument('--samples', type=int, default=-1, help="The number of samples to generate per class (defaults to the maximum class size)")
     parser.add_argument('--parent_type', type=str, default=None, help="Only keep samples with this parent type = parent")
@@ -196,7 +198,7 @@ if __name__ == "__main__":
         if cont.lower() == "n":
             exit()
 
-        out_df = augment(df, args.level, args.r, args.samples)
+        out_df = augment(df, args.level, args.r, args.insertion_amount, args.deletion_amount, args.samples)
     
     out_df.to_csv(args.out, sep=args.sep, index=False)
     print(f"Output written to {args.out}")

@@ -42,6 +42,7 @@ def main():
     # print(train_loader.dataset[0])
 
     # Construct and parallel the model
+    print("Catch A")
     ppnet = construct_ppnet(cfg)
     
     if cfg.DATASET.NAME == 'multimodal':

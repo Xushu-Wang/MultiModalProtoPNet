@@ -5,13 +5,12 @@ MODEL:
     PROTOTYPE_DISTANCE_FUNCTION: 'cosine'
     PROTOTYPE_ACTIVATION_FUNCTION: 'linear'
 
-
 DATASET:
     NAME: bioscan
     NUM_CLASSES: 40
     IMAGE: 
         SIZE: 256
-        PROTOTYPE_SHAPE: (200, 2048, 1, 1)
+        PROTOTYPE_SHAPE: (400, 128, 1, 1)
         TRAIN_DIR: "datasets/bioscan/train_diptera_augmented"
         TEST_DIR: "datasets/bioscan/test_diptera"
         TRAIN_PUSH_DIR: "datasets/bioscan/train_diptera"
@@ -22,7 +21,8 @@ DATASET:
         FIX_PROTOTYPES: False
 
 OPTIM:
-    NUM_TRAIN_EPOCHS: 21
+    NUM_TRAIN_EPOCHS: 100
+    PUSH_START: 20
     # JOINT_OPTIMIZER_LAYERS:
     #     ADD_ON_LAYERS: 1e-3
     #     PROTOTYPE_VECTORS: 1e-3
@@ -35,8 +35,8 @@ OPTIM:
 
 
 OUTPUT:
-    MODEL_DIR: "./saved_models/bioscan"
-    IMG_DIR: "./saved_models/bioscan/img"
+    MODEL_DIR: "./saved_models/bioscan-400"
+    IMG_DIR: "./saved_models/bioscan-400/img"
     WEIGHT_MATRIX_FILENAME: 'outputL_weights'
     PROTOTYPE_IMG_FILENAME_PREFIX: 'prototype-img'
     PROTOTYPE_SELF_ACT_FILENAME_PREFIX: 'prototype-self-act'

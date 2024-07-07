@@ -49,7 +49,10 @@ class PPNet(nn.Module):
         # this has to be named features to allow the precise loading
         self.features = features
 
+        
+
         features_name = str(self.features).upper()
+        print(features_name)
         if features_name.startswith('VGG') or features_name.startswith('RES'):
             first_add_on_layer_in_channels = \
                 [i for i in features.modules() if isinstance(i, nn.Conv2d)][-1].out_channels
@@ -68,6 +71,8 @@ class PPNet(nn.Module):
             self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
                                 requires_grad=True)
             
+            self.add_on_layers = nn.Conv2d(2048,128, kernel_size=(1,1))
+
         elif self.prototype_distance_function == 'l2':
             proto_depth = self.prototype_shape[1]
 

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
+from torchvision.models import resnet50
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -8,7 +9,8 @@ model_urls = {
     'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
     'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
-    'resnetbioscan': '/home/users/xw214/MultiModalProtoPNet/pretrained_backbones/resnet50_backbone_final.pth'
+    'resnetbioscan': '/home/users/xw214/MultiModalProtoPNet/pretrained_backbones/resnet50_backbone_final.pth',
+    'resnetbioscan2': 'resnet50_backbone_final_small.pth'
 }
 
 
@@ -118,7 +120,6 @@ class Bottleneck(nn.Module):
         block_paddings = [0, 1, 0]
 
         return block_kernel_sizes, block_strides, block_paddings
-
 
 class ResNet_features(nn.Module):
     '''
@@ -301,6 +302,7 @@ def resnet_bioscan_features(pretrained=True, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on BIO1MSCAN dataset
     """
+    print("Catch E or Somting")
     model = ResNet_features(Bottleneck, [3, 4, 6, 3], **kwargs)
 
     if pretrained:
@@ -314,6 +316,38 @@ def resnet_bioscan_features(pretrained=True, **kwargs):
     else:
         raise NotImplementedError
 
+class ResComboModel(nn.Module):
+    def __init__(self, resnet, output_channels=128):
+        super(ResComboModel, self).__init__()
+        self.resnet = resnet
+        self.channel_fixer = nn.Conv2d(2048,output_channels, kernel_size=(1,1))
+        
+    def forward(self, x):
+        x = self.resnet(x)
+        x = self.channel_fixer(x)
+        return x
+    
+    def conv_info(self):
+        return self.resnet.conv_info()
+
+def resnet_bioscan_features2(pretrained=True, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on BIO1MSCAN dataset
+    """
+    print("Catch E or Somting")
+    model = ResNet_features(Bottleneck, [3, 4, 6, 3], **kwargs)
+    model = ResComboModel(model)
+
+    if pretrained:
+        my_dict = torch.load(model_urls['resnetbioscan2'], map_location=torch.device('cpu'))
+        my_dict.pop('fc.weight')
+        my_dict.pop('fc.bias')
+        model.load_state_dict(my_dict, strict=False)
+        
+        return model
+    else:
+        raise NotImplementedError
 
 if __name__ == '__main__':
 
