@@ -94,43 +94,13 @@ def construct_genetic_ppnet(length:int, num_classes:int, prototype_shape, model_
     
     
     
-def construct_multimodal_ppnet(base_architecture, img_size, length, model_path, 
-                               img_prototype_shape, genetic_prototype_shape, 
-                               num_classes, prototype_activation_function, pretrained = True):
-    
-    features = base_architecture_to_features[base_architecture](pretrained=pretrained)
-    layer_filter_sizes, layer_strides, layer_paddings = features.conv_info()
-    proto_layer_rf_info = compute_proto_layer_rf_info_v2(img_size=img_size,
-                                                         layer_filter_sizes=layer_filter_sizes,
-                                                         layer_strides=layer_strides,
-                                                         layer_paddings=layer_paddings,
-                                                         prototype_kernel_size=img_prototype_shape[2])
-    
-    
-    m = GeneticCNN2D(length, num_classes, include_connected_layer=False, remove_last_layer=False)
+def construct_multimodal_ppnet(genetic_model_path, image_model_path, num_classes):
+    genetic_ppnet = torch.load(genetic_model_path)
+    image_ppnet = torch.load(image_model_path)
 
-    # Remove the fully connected layer
-    weights = torch.load(model_path)
+    ppnet = MultiModal_PPNet(image_ppnet, genetic_ppnet, num_classes=num_classes)
 
-    for k in list(weights.keys()):
-        if "conv" not in k:
-            del weights[k]
-    
-    m.load_state_dict(weights)
-    
-    
-    return MultiModal_PPNet(
-        img_features=features,
-        genetic_features=m,
-        img_size=img_size,
-        genetic_size=length,
-        img_prototype_shape=img_prototype_shape,
-        genetic_prototype_shape=genetic_prototype_shape,
-        proto_layer_rf_info = proto_layer_rf_info,
-        num_classes=num_classes,
-        init_weights=True,
-        prototype_activation_function = prototype_activation_function
-    )
+    return ppnet
 
 def construct_ppnet(cfg): 
     if cfg.DATASET.NAME == "cub" or cfg.DATASET.NAME == 'bioscan': 
@@ -157,14 +127,9 @@ def construct_ppnet(cfg):
         ).to(cfg.MODEL.DEVICE)
     elif cfg.DATASET.NAME == "multimodal":
         return construct_multimodal_ppnet(
-            base_architecture=cfg.MODEL.BACKBONE,
-            img_size=cfg.DATASET.IMAGE.SIZE,
-            length=cfg.DATASET.GENETIC.SIZE, 
-            model_path = cfg.MODEL.GENETIC_BACKBONE,
-            img_prototype_shape=cfg.DATASET.IMAGE.PROTOTYPE_SHAPE,
-            genetic_prototype_shape=cfg.DATASET.GENETIC.PROTOTYPE_SHAPE,
+            genetic_model_path=cfg.MODEL.GENETIC_PPNET,
+            image_model_path= cfg.MODEL.IMAGE_PPNET,
             num_classes=cfg.DATASET.NUM_CLASSES,
-            prototype_activation_function=cfg.MODEL.PROTOTYPE_ACTIVATION_FUNCTION
         ).to(cfg.MODEL.DEVICE)
     else: 
         raise NotImplementedError

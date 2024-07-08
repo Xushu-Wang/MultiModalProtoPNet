@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-#SBATCH --job-name=w-multi-test-1-aligned      # Job name
+#SBATCH --job-name=regular_fixed      # Job name
 #SBATCH --ntasks=1                    # Run on a single Node
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=80gb                  # Job memory request
 #SBATCH --time=15:00:00                # Time limit hrs:min:sec
 #SBATCH --partition=compsci-gpu
 #SBATCH --gres=gpu:2
-#SBATCH --output=logs/multi-test-1-aligned-w_%j.out
+#SBATCH --output=logs/regular_fixed-%j.out
 
 eval "$(conda shell.bash hook)" 
 conda activate intnn
-python3 main.py --configs configs/multimodal.yaml
+python3 main.py --configs configs/genetics.yaml

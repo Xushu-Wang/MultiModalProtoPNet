@@ -71,7 +71,8 @@ class PPNet(nn.Module):
             self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
                                 requires_grad=True)
             
-            self.add_on_layers = nn.Conv2d(2048,128, kernel_size=(1,1))
+            if not genetics_mode:
+                self.add_on_layers = nn.Conv2d(2048,128, kernel_size=(1,1))
 
         elif self.prototype_distance_function == 'l2':
             proto_depth = self.prototype_shape[1]

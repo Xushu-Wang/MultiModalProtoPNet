@@ -5,7 +5,7 @@ MODEL:
     PROTOTYPE_ACTIVATION_FUNCTION: "linear"
     # BACKBONE: "pretrained_backbones/40w-64-deep_6.pth"
     BACKBONE: "saved_models/backbones/family_new_aug_1/family_new_aug_1_best.pth"
-    # BACKBONE: "saved_models/backbones/genus_aug/genus_aug_best.pth"
+    # BACKBONE: "saved_models/backbones/corrupted_family_r20i8d8_0/corrupted_family_r20i8d8_0_best.pth"
     # BACKBONE: "saved_models/backbones/species_Metriocnemus/species_Metriocnemus_best.pth"
 
 DATASET:
@@ -24,21 +24,21 @@ DATASET:
         PROTOTYPE_SHAPE: (1600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         # PROTOTYPE_SHAPE: (600, 64, 1, 1) # 40 * DATASET_NUM_CLASSES
         FIX_PROTOTYPES: True
-        TRAIN_PATH: "datasets/genetics/small_diptera_family-train.tsv"
-        TRAIN_PUSH_DIR: "datasets/genetics/small_diptera_family-train.tsv"
-        VALIDATION_PATH: "datasets/genetics/small_diptera_family-validation.tsv"
+        TRAIN_PATH: "datasets/genetics-charlie-local/corrupted_diptera_family_train-r25i12d12_augmented.tsv"
+        TRAIN_PUSH_DIR: "datasets/genetics-charlie-local/corrupted_diptera_family_train-r25i12d12_augmented.tsv"
+        VALIDATION_PATH: "datasets/genetics-charlie-local/corrupted_diptera_family_validation-r25i12d12_augmented.tsv"
         # TRAIN_PATH: "datasets/genetics/large_diptera_family-train-temp_augmented.tsv"
         # TRAIN_PUSH_DIR: "datasets/genetics/large_diptera_family-train-temp_chopped.tsv"
         # VALIDATION_PATH: "datasets/genetics/large_diptera_family-validation.tsv"
 
 OUTPUT:
     NO_SAVE: False
-    MODEL_DIR: "saved_models/genetics/diptera_test_new_1"
-    IMG_DIR: "saved_models/genetics/diptera_test_new_1"
+    MODEL_DIR: "saved_models/genetics/regular_fixed_order"
+    IMG_DIR: "saved_models/genetics/regular_fixed_order_img"
     PROTOTYPE_IMG_FILENAME_PREFIX: "genetic-string"
 OPTIM:
-    PUSH_START: 0
-    NUM_WARM_EPOCHS: 5
+    PUSH_START: 10
+    NUM_WARM_EPOCHS: 10
     PUSH_EPOCHS: [0, 5, 10, 20, 30, 40, 50, 60, 70, 80]
     # COEFS:
     # SEP: -.04

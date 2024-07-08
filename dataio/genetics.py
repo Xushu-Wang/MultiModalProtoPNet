@@ -222,7 +222,6 @@ class GeneticDataset(Dataset):
 
             if restraint:
                 print("Classes supplied with restraint. Restraints ignored.")
-        
         else:
             if restraint:
                 self.data = self.data[self.data[restraint[0]].isin(restraint[1])]
@@ -260,7 +259,7 @@ class GeneticDataset(Dataset):
     
     def get_classes(self, class_name: str):
         """Get a tuple of the list of the unique classes in the dataset, and their sizes for a given class name, e.x. order."""
-        classes = self.data[class_name].unique()
+        classes = sorted(list(self.data[class_name].unique()))
         class_sizes = self.data[class_name].value_counts()
 
-        return list(classes), list(class_sizes[classes])
+        return classes, list(class_sizes[classes])
